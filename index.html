@@ -10,7 +10,7 @@
   *{box-sizing:border-box}
   html,body{height:100%}
   body{margin:0;background:linear-gradient(180deg,var(--violet),var(--night));color:#fff;font-family:system-ui,-apple-system,Inter,Segoe UI,Roboto,Arial,sans-serif;overflow:hidden}
-  #canvas{display:block;width:100vw;height:100vh}
+  #canvas{display:block;width:100vw;height:100vh;touch-action:manipulation}
   /* HUD */
   #hud{position:fixed;inset:0;pointer-events:none;display:flex;flex-direction:column;justify-content:space-between;padding:env(safe-area-inset-top) 14px env(safe-area-inset-bottom) 14px}
   .row{display:flex;align-items:center;justify-content:space-between;gap:10px}
@@ -22,11 +22,13 @@
   /* Overlays */
   #overlay{position:fixed;inset:0;display:none;place-items:center;background:rgba(0,0,0,.38);backdrop-filter:blur(6px);z-index:5}
   #overlay.show{display:grid}
-  .card{width:min(560px,92vw);background:linear-gradient(180deg,var(--glass),rgba(255,255,255,.05));border:1px solid rgba(255,255,255,.16);border-radius:18px;padding:20px;text-align:center}
-  h1{margin:.2rem 0 0;font-size:1.6rem}
+  .card{width:min(620px,92vw);background:linear-gradient(180deg,var(--glass),rgba(255,255,255,.05));border:1px solid rgba(255,255,255,.16);border-radius:18px;padding:22px;text-align:center}
+  h1{margin:.25rem 0 .2rem;font-size:1.7rem}
   p{margin:.35rem 0;opacity:.92}
   .hint{font-size:.9rem;opacity:.85}
-  .actions{display:flex;gap:10px;justify-content:center;margin-top:12px}
+  .actions{display:flex;gap:10px;justify-content:center;margin-top:12px;flex-wrap:wrap}
+  .bigscore{font-size:2.2rem;font-weight:900;letter-spacing:.5px;margin:.25rem 0 0}
+  .subscore{opacity:.9;margin:.1rem 0 .5rem}
 </style>
 </head>
 <body>
@@ -39,8 +41,8 @@
     <div class="row" style="gap:8px">
       <div class="pill" id="coins">Coins: 0</div>
       <div class="pill" id="best">Best: 0</div>
-      <button id="muteBtn" class="btn alt">Mute</button>
-      <button id="pauseBtn" class="btn">Pause</button>
+      <button id="muteBtn" class="btn alt" aria-label="Mute">Mute</button>
+      <button id="pauseBtn" class="btn" aria-label="Pause">Pause</button>
     </div>
   </div>
   <div class="row" style="padding:10px">
@@ -49,55 +51,65 @@
   </div>
 </div>
 
-<!-- Start / Game Over overlay -->
+<!-- Start / How-To / Game Over -->
 <div id="overlay" class="show" role="dialog" aria-modal="true">
-  <div class="card">
+  <div class="card" id="overlayCard">
     <h1 id="title">$NARPE — Swim & Dodge</h1>
-    <p id="subtitle">Tap / Space / ↑ to swim. Wide lanes, varied patterns, collect coins.</p>
-    <p class="hint">Mobile: tap anywhere · Desktop: Space or ↑ · M to mute</p>
-    <div class="actions">
-      <button id="playBtn" class="btn">Play</button>
+    <p id="subtitle">Tap / Space / ↑ to swim. Wide lanes, varied patterns, coins to collect. Avoid ice & mines.</p>
+    <p class="hint">Mobile: tap the game area · Desktop: Space or ↑ · Press M to mute</p>
+    <div class="actions" id="startActions">
       <button id="howBtn" class="btn alt">How to</button>
+      <button id="playBtn" class="btn">Play</button>
     </div>
-    <div class="actions" id="shareWrap" style="display:none">
-      <button id="shareBtn" class="btn gold">Share score on X</button>
+    <div id="howContent" style="display:none;margin-top:8px">
+      <p>• Swim upward with tap/Space/↑. Gravity pulls you down.</p>
+      <p>• Pass through wide gaps between ice/mine hazards to gain points.</p>
+      <p>• Collect coins for +5 points (easy pickup radius). Game speed increases gradually.</p>
+      <div class="actions"><button id="playBtn2" class="btn">Play</button></div>
+    </div>
+    <div id="gameOverContent" style="display:none">
+      <div class="bigscore" id="finalScore">Score: 0</div>
+      <div class="subscore" id="finalMeta">Best: 0 • Coins: 0</div>
+      <div class="actions" id="shareWrap">
+        <button id="shareBtn" class="btn gold">Share score on X</button>
+        <button id="playAgainBtn" class="btn">Play again</button>
+      </div>
     </div>
   </div>
 </div>
 
 <script>
 (()=>{
-/* ===== Canvas & DPI ===== */
+/* ========= Canvas / DPI ========= */
 const dpr = Math.max(1, Math.min(2, devicePixelRatio||1));
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 function resize(){ canvas.width=Math.floor(innerWidth*dpr); canvas.height=Math.floor(innerHeight*dpr); ctx.setTransform(dpr,0,0,dpr,0,0); }
 addEventListener('resize', resize, {passive:true}); resize();
 
-/* ===== Optional Narpe image ===== */
+/* ========= Optional Narpe image ========= */
 const narpeImg = new Image(); let narpeReady=false;
 narpeImg.onload=()=>narpeReady=true; narpeImg.onerror=()=>narpeReady=false;
-narpeImg.src='narpe.png'; // optional; fallback drawing if missing
+narpeImg.src='narpe.png'; // optional; fallback drawing otherwise
 
-/* ===== Audio (simple WebAudio tones) ===== */
-let audioCtx, masterGain; let muted=false;
-function initAudio(){
-  if(audioCtx) return;
+/* ========= Audio ========= */
+let audioCtx, masterGain, muted=false;
+function initAudio(){ if(audioCtx) return;
   audioCtx = new (window.AudioContext||window.webkitAudioContext)();
-  masterGain = audioCtx.createGain(); masterGain.gain.value = 0.7; masterGain.connect(audioCtx.destination);
+  masterGain = audioCtx.createGain(); masterGain.gain.value=0.7; masterGain.connect(audioCtx.destination);
   startMusic();
 }
 function startMusic(){
   const osc = audioCtx.createOscillator(), g = audioCtx.createGain();
   osc.type='sine'; g.gain.value=0; osc.connect(g).connect(masterGain); osc.start();
-  const notes=[261.63,329.63,392.00,329.63,293.66,261.63,196.00,261.63]; // simple loop
+  const notes=[261.63,329.63,392,329.63,293.66,261.63,196,261.63];
   let i=0;
   setInterval(()=>{ if(!audioCtx||muted) return;
     const t=audioCtx.currentTime;
-    osc.frequency.setTargetAtTime(notes[i%notes.length], t, 0.02);
+    osc.frequency.setTargetAtTime(notes[i%notes.length], t, .02);
     g.gain.cancelScheduledValues(t); g.gain.setValueAtTime(0, t);
-    g.gain.linearRampToValueAtTime(0.08, t+0.02);
-    g.gain.exponentialRampToValueAtTime(0.0001, t+0.35);
+    g.gain.linearRampToValueAtTime(.08, t+.02);
+    g.gain.exponentialRampToValueAtTime(.0001, t+.35);
     i++;
   }, 420);
 }
@@ -105,163 +117,221 @@ function sfxCoin(){ if(!audioCtx||muted) return;
   const o=audioCtx.createOscillator(), g=audioCtx.createGain();
   o.type='triangle'; o.frequency.value=900; g.gain.value=0; o.connect(g).connect(masterGain);
   const t=audioCtx.currentTime; o.start(t);
-  o.frequency.exponentialRampToValueAtTime(1500, t+0.08);
-  g.gain.linearRampToValueAtTime(0.18, t+0.01);
-  g.gain.exponentialRampToValueAtTime(0.0001, t+0.22);
-  o.stop(t+0.24);
+  o.frequency.exponentialRampToValueAtTime(1500, t+.08);
+  g.gain.linearRampToValueAtTime(.18, t+.01);
+  g.gain.exponentialRampToValueAtTime(.0001, t+.22);
+  o.stop(t+.24);
 }
 function sfxLose(){ if(!audioCtx||muted) return;
   const o=audioCtx.createOscillator(), g=audioCtx.createGain();
   o.type='sawtooth'; o.frequency.value=420; g.gain.value=0; o.connect(g).connect(masterGain);
   const t=audioCtx.currentTime; o.start(t);
-  o.frequency.exponentialRampToValueAtTime(120, t+0.4);
-  g.gain.linearRampToValueAtTime(0.22, t+0.01);
-  g.gain.exponentialRampToValueAtTime(0.0001, t+0.5);
-  o.stop(t+0.52);
+  o.frequency.exponentialRampToValueAtTime(120, t+.4);
+  g.gain.linearRampToValueAtTime(.22, t+.01);
+  g.gain.exponentialRampToValueAtTime(.0001, t+.5);
+  o.stop(t+.52);
 }
 
-/* ===== Game State ===== */
+/* ========= State ========= */
 let running=false, paused=false, over=false;
 let tLast=0, time=0, spawnTimer=0, patternTimer=0, currentPattern='straight';
 let score=0, coins=0, best=Number(localStorage.getItem('narpe_best')||0);
-let speed=150, speedMult=1.0; const SPEED_RAMP=0.012; // very gradual
-const HUD={
+let speed=170, speedMult=1.0; const SPEED_RAMP=0.02; // a touch faster ramp
+
+// UI refs
+const HUD = {
   score:document.getElementById('score'),
   coins:document.getElementById('coins'),
   best:document.getElementById('best'),
   pauseBtn:document.getElementById('pauseBtn'),
   restartBtn:document.getElementById('restartBtn'),
   muteBtn:document.getElementById('muteBtn'),
-  overlay:document.getElementById('overlay'),
-  title:document.getElementById('title'),
-  subtitle:document.getElementById('subtitle'),
-  playBtn:document.getElementById('playBtn'),
-  howBtn:document.getElementById('howBtn'),
-  shareWrap:document.getElementById('shareWrap'),
-  shareBtn:document.getElementById('shareBtn'),
 };
 HUD.best.textContent='Best: '+best;
 
-const narpe={ x: innerWidth*0.24, y: innerHeight*0.5, vy:0, r:30, tilt:0 }; // smaller r = more forgiving
+const overlay = document.getElementById('overlay');
+const title = document.getElementById('title');
+const subtitle = document.getElementById('subtitle');
+const startActions = document.getElementById('startActions');
+const howBtn = document.getElementById('howBtn');
+const playBtn = document.getElementById('playBtn');
+const howContent = document.getElementById('howContent');
+const playBtn2 = document.getElementById('playBtn2');
+const gameOverContent = document.getElementById('gameOverContent');
+const finalScore = document.getElementById('finalScore');
+const finalMeta = document.getElementById('finalMeta');
+const shareWrap = document.getElementById('shareWrap');
+const shareBtn = document.getElementById('shareBtn');
+const playAgainBtn = document.getElementById('playAgainBtn');
+
+const narpe={ x: innerWidth*0.24, y: innerHeight*0.5, vy:0, r:30, tilt:0 };
 const OBS=[]; const COINS=[];
 let laneY=innerHeight*0.5, laneTarget=laneY;
 
-/* ===== Helpers ===== */
+/* ========= Helpers ========= */
 const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const rnd=(a,b)=>a+Math.random()*(b-a);
-function circleRectHit(cx,cy,cr, rx,ry,rw,rh, margin=10){
-  // shrink rect by margin to avoid phantom hits
+function circleRectHit(cx,cy,cr, rx,ry,rw,rh, margin=12){
   const x1=rx+margin, y1=ry+margin, x2=rx+rw-margin, y2=ry+rh-margin;
   const nx=clamp(cx,x1,x2), ny=clamp(cy,y1,y2);
   const dx=cx-nx, dy=cy-ny; return dx*dx+dy*dy < cr*cr;
 }
 function circleHit(ax,ay,ar, bx,by,br){ const dx=ax-bx, dy=ay-by; return (dx*dx+dy*dy) < (ar+br)*(ar+br); }
 
-/* ===== Input ===== */
-function swim(){ if(!running){ start(); return; } if(over||paused) return; narpe.vy=-440; }
+/* ========= Input ========= */
+// IMPORTANT: only clicks/taps on the canvas start/swim (so buttons don't start the game)
+function swim(){
+  if(overlay.classList.contains('show')) return; // don't start if overlay visible
+  if(!running){ start(); return; }
+  if(over||paused) return;
+  narpe.vy = -440;
+}
+canvas.addEventListener('pointerdown', ()=>swim(), {passive:true});
 addEventListener('keydown',e=>{
   if([' ','ArrowUp','Spacebar'].includes(e.key)){ e.preventDefault(); swim(); }
-  if(e.key==='p') togglePause(); if(e.key==='m') toggleMute();
+  if(e.key==='p') togglePause();
+  if(e.key==='m') toggleMute();
 });
-addEventListener('pointerdown',()=>swim(),{passive:true});
-HUD.playBtn.onclick=()=>start();
-HUD.howBtn.onclick=()=>HUD.subtitle.textContent='Swim with tap/Space. Wide lanes. Score by passing gates; coins +5. Game speeds up gradually.';
 HUD.pauseBtn.onclick=()=>togglePause();
 HUD.restartBtn.onclick=()=>reset(true);
 HUD.muteBtn.onclick=()=>toggleMute();
-HUD.shareBtn.onclick=()=>{
-  const text=encodeURIComponent(`I scored ${score} (${coins} coins) in $NARPE Swim & Dodge! 🌊🦄 #NARPE #Abstract`);
-  const url=encodeURIComponent(location.origin);
+
+howBtn.onclick=()=>{
+  startActions.style.display='none';
+  howContent.style.display='block';
+};
+playBtn.onclick=()=>{ start(); };
+playBtn2.onclick=()=>{ start(); };
+playAgainBtn.onclick=()=>{ start(); };
+shareBtn.onclick=()=>{
+  const text = encodeURIComponent(`I scored ${score} in the $NARPE Swim & Dodge mini-game! Try to beat me 👀🌊`);
+  const url = encodeURIComponent(location.href);
   window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}`,'_blank');
 };
-function togglePause(){ if(!running||over) return; paused=!paused; HUD.pauseBtn.textContent=paused?'Resume':'Pause'; showOverlay(paused, paused?'Paused':'', paused?'Tap / Space / ↑ to continue.':''); }
-function toggleMute(){ muted=!muted; HUD.muteBtn.textContent=muted?'Unmute':'Mute'; if(audioCtx) masterGain.gain.value = muted ? 0 : 0.7; }
 
-/* ===== Flow ===== */
-function showOverlay(show,title,subtitle){
-  HUD.overlay.classList.toggle('show', !!show);
-  if(title) HUD.title.textContent=title;
-  if(subtitle) HUD.subtitle.textContent=subtitle;
-  HUD.shareWrap.style.display=(show&&over)?'flex':'none';
+function togglePause(){
+  if(!running||over) return;
+  paused=!paused; HUD.pauseBtn.textContent = paused?'Resume':'Pause';
+  if(paused) showOverlay('paused'); else hideOverlay();
 }
-function start(){ reset(false); running=true; paused=false; over=false; tLast=performance.now(); showOverlay(false); initAudio(); requestAnimationFrame(loop); }
+function toggleMute(){ muted=!muted; HUD.muteBtn.textContent = muted?'Unmute':'Mute'; if(audioCtx) masterGain.gain.value = muted? 0 : 0.7; }
+
+/* ========= Overlay control ========= */
+function showOverlay(mode){
+  overlay.classList.add('show');
+  if(mode==='start'){
+    title.textContent='$NARPE — Swim & Dodge';
+    subtitle.textContent='Tap / Space / ↑ to swim. Wide lanes, varied patterns, coins to collect.';
+    startActions.style.display='flex';
+    howContent.style.display='none';
+    gameOverContent.style.display='none';
+  }else if(mode==='paused'){
+    title.textContent='Paused';
+    subtitle.textContent='Tap / Space / ↑ to continue.';
+    startActions.style.display='none';
+    howContent.style.display='none';
+    gameOverContent.style.display='none';
+  }else if(mode==='over'){
+    title.textContent='Game Over';
+    subtitle.textContent='Well played.';
+    finalScore.textContent = `Score: ${score}`;
+    finalMeta.textContent  = `Best: ${best} • Coins: ${coins}`;
+    startActions.style.display='none';
+    howContent.style.display='none';
+    gameOverContent.style.display='block';
+  }
+}
+function hideOverlay(){ overlay.classList.remove('show'); }
+
+/* ========= Flow ========= */
+function start(){
+  reset(false);
+  running=true; paused=false; over=false;
+  hideOverlay();
+  initAudio();
+  tLast = performance.now();
+  requestAnimationFrame(loop);
+}
 function reset(hard){
-  score=0; coins=0; speed=150; speedMult=1.0; spawnTimer=0; patternTimer=0; currentPattern='straight';
+  score=0; coins=0; speed=170; speedMult=1.0; spawnTimer=0; patternTimer=0; currentPattern='straight';
   HUD.score.textContent='Score: 0'; HUD.coins.textContent='Coins: 0';
   narpe.x=innerWidth*0.24; narpe.y=innerHeight*0.5; narpe.vy=0; narpe.tilt=0;
   laneY=innerHeight*0.5; laneTarget=laneY;
   OBS.length=0; COINS.length=0;
-  if(hard){ running=false; over=false; paused=false; showOverlay(true,'$NARPE — Swim & Dodge','Tap / Space / ↑ to swim. Wide lanes, varied patterns, coins to collect.'); }
+  if(hard){ running=false; paused=false; over=false; showOverlay('start'); }
 }
 function end(){
   over=true; running=false; paused=false; sfxLose();
   if(score>best){ best=score; localStorage.setItem('narpe_best',best); HUD.best.textContent='Best: '+best; }
-  showOverlay(true,'Game Over',`Score: ${score} • Best: ${best} • Coins: ${coins}`);
-  HUD.shareWrap.style.display='flex';
+  showOverlay('over');
 }
 
-/* ===== Patterns & Spawning ===== */
+/* ========= Patterns & Spawning ========= */
 function pickPattern(){
   const patterns=['straight','gentleWave','rising','falling','zigzag'];
   currentPattern = patterns[Math.floor(Math.random()*patterns.length)];
-  patternTimer = 4 + Math.random()*4; // seconds until next change
+  patternTimer = 4 + Math.random()*4; // seconds
 }
 function updateLane(dt){
   patternTimer -= dt; if(patternTimer<=0) pickPattern();
-  const h=innerHeight, bandTop=h*0.26, bandBot=h*0.74; // safe vertical band
+  const h=innerHeight, topBand=h*0.22, botBand=h*0.78; // allow higher range so top gets used
   switch(currentPattern){
     case 'straight': laneTarget += rnd(-40,40); break;
-    case 'gentleWave': laneTarget += Math.sin(time*2.0)*30 + rnd(-10,10); break;
-    case 'rising': laneTarget -= 60*dt* (1+Math.random()*0.3); break;
-    case 'falling': laneTarget += 60*dt* (1+Math.random()*0.3); break;
-    case 'zigzag': laneTarget += (Math.sin(time*3.2)>0? 120:-120)*dt; break;
+    case 'gentleWave': laneTarget += Math.sin(time*2.0)*36 + rnd(-12,12); break;
+    case 'rising': laneTarget -= 70*dt; break;
+    case 'falling': laneTarget += 70*dt; break;
+    case 'zigzag': laneTarget += (Math.sin(time*3.1)>0? 140:-140)*dt; break;
   }
-  laneTarget = clamp(laneTarget, bandTop, bandBot);
-  // smooth follow
-  laneY += (laneTarget - laneY) * Math.min(1, dt*3.5);
+  laneTarget = clamp(laneTarget, topBand, botBand);
+  laneY += (laneTarget - laneY) * Math.min(1, dt*3.6);
 }
 function spawn(){
   const h=innerHeight;
-  // WIDE gap: 32–36% of screen height, never less than 220px
-  const GAP = Math.max(220, h * (0.32 + Math.random()*0.04));
-  updateLane(0); // ensure laneY current
+  // Wide gap ≈ 32–38% of screen height, min 230px
+  const GAP = Math.max(230, h * (0.32 + Math.random()*0.06));
+  updateLane(0);
   const yMid = laneY;
   const v = speed * speedMult;
 
-  // choose obstacle mix; at most 1 mine per pair for fairness
-  const topIsMine = Math.random()<0.25;
-  const botIsMine = !topIsMine && Math.random()<0.25;
+  // pick obstacle mix; ensure top shows up often
+  const topRect = Math.random() < 0.8; // 80% chance top is ice
+  const botRect = Math.random() < 0.7;
 
-  // ICE rectangles
-  if(!topIsMine)  OBS.push({shape:'rect', x: innerWidth+60, y: yMid-GAP/2-180, w:64, h:280, vx:-v, passed:false});
-  if(!botIsMine)  OBS.push({shape:'rect', x: innerWidth+60, y: yMid+GAP/2,     w:64, h:280, vx:-v, passed:false});
+  if(topRect) OBS.push({shape:'rect', x: innerWidth+60, y: yMid-GAP/2-190, w:66, h:290, vx:-v, passed:false});
+  else        OBS.push({shape:'circle', x: innerWidth+88, y: yMid-GAP/2-95, r:22, vx:-v, passed:false});
 
-  // MINE circles (true circle collision, smaller radius)
-  if(topIsMine)   OBS.push({shape:'circle', x: innerWidth+92, y: yMid-GAP/2-90,  r:22, vx:-v, passed:false});
-  if(botIsMine)   OBS.push({shape:'circle', x: innerWidth+92, y: yMid+GAP/2+90,  r:22, vx:-v, passed:false});
+  if(botRect) OBS.push({shape:'rect', x: innerWidth+60, y: yMid+GAP/2,     w:66, h:290, vx:-v, passed:false});
+  else        OBS.push({shape:'circle', x: innerWidth+88, y: yMid+GAP/2+95, r:22, vx:-v, passed:false});
 
-  // coin in/near the lane
+  // Anti-top-camping: occasional ceiling icicle (fair + rare)
+  if(yMid < h*0.44 && Math.random()<0.22){
+    OBS.push({shape:'rect', x: innerWidth+60, y: 0, w: 54, h: Math.floor(100+Math.random()*120), vx:-v, passed:false, ceiling:true});
+  }
+
+  // Coins in/near lane — and with easy pickup (we enlarge hitbox later)
   if(Math.random()<0.85){
     COINS.push({x: innerWidth+ 60 + rnd(140,220), y: yMid + rnd(-GAP/3, GAP/3), r:12, vx:-v, got:false});
   }
 
-  // spawn cadence proportional to speed so spacing feels consistent
-  spawnTimer = (1.65) * (150 / speed);
+  // cadence: keeps spacing consistent while speed increases
+  spawnTimer = 1.6 * (170 / speed);
 }
 
-/* ===== Drawing ===== */
+/* ========= Drawing ========= */
 function drawBG(tm){
   const w=innerWidth,h=innerHeight;
   ctx.clearRect(0,0,w,h);
   const g=ctx.createLinearGradient(0,0,0,h);
   g.addColorStop(0,'#0a2a6b'); g.addColorStop(1,'#041632');
   ctx.fillStyle=g; ctx.fillRect(0,0,w,h);
+  // light rays
   for(let i=0;i<5;i++){
     const x=(tm*0.02 + i*220)%(w+220)-220;
     ctx.globalAlpha=.06; ctx.fillStyle='#7fd1ff';
     ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x+140,0); ctx.lineTo(x+40,h); ctx.lineTo(x-100,h); ctx.closePath(); ctx.fill();
   }
   ctx.globalAlpha=1;
+  // bubbles
   for(let i=0;i<18;i++){
     const bx=(tm*0.12 + i*(w/18))%(w+80)-40;
     const by=(tm*0.06 + i*40)%(h+40)-20;
@@ -275,6 +345,7 @@ function drawNarpe(x,y,tilt){
     const s=96; ctx.save(); ctx.translate(x,y); ctx.rotate(tilt*0.04);
     ctx.drawImage(narpeImg,-s*0.6,-s*0.6,s*1.2,s*1.2); ctx.restore();
   }else{
+    // fallback cartoon
     ctx.save(); ctx.translate(x,y); ctx.rotate(tilt*0.04);
     ctx.fillStyle='#bfe7ff'; ctx.beginPath(); ctx.ellipse(0,0,44,34,0,0,Math.PI*2); ctx.fill();
     ctx.fillStyle='#e8f7ff'; ctx.beginPath(); ctx.ellipse(0,8,26,20,0,0,Math.PI*2); ctx.fill();
@@ -288,13 +359,11 @@ function drawNarpe(x,y,tilt){
   }
 }
 function drawObstacle(o){
-  ctx.save(); 
+  ctx.save(); ctx.translate(o.x,o.y);
   if(o.shape==='rect'){
-    ctx.translate(o.x,o.y);
     ctx.fillStyle='#9fe3ff'; ctx.strokeStyle='#4aa7c7'; ctx.lineWidth=2;
     ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(o.w,10); ctx.lineTo(o.w,o.h); ctx.lineTo(0,o.h); ctx.closePath(); ctx.fill(); ctx.stroke();
   }else{ // circle mine
-    ctx.translate(o.x,o.y);
     ctx.fillStyle='#5c6b7a'; ctx.beginPath(); ctx.arc(0,0,o.r,0,Math.PI*2); ctx.fill();
     ctx.fillStyle='#7f8fa0';
     for(let k=0;k<6;k++){ const a=k*Math.PI/3, R=o.r+10; ctx.beginPath(); ctx.arc(Math.cos(a)*R, Math.sin(a)*R, 4, 0, Math.PI*2); ctx.fill(); }
@@ -310,13 +379,13 @@ function drawCoin(c){
   ctx.restore();
 }
 
-/* ===== Loop ===== */
+/* ========= Loop ========= */
 function loop(now){
   if(!running) return;
   const dt=Math.min(0.04,(now-tLast)/1000); tLast=now; time+=dt;
 
   if(!paused && !over){
-    // speed up gradually (not tighter gaps)
+    // speed ramps gradually
     speedMult += SPEED_RAMP * dt;
     const v = speed * speedMult;
 
@@ -326,7 +395,7 @@ function loop(now){
     narpe.y += narpe.vy*dt; narpe.y = clamp(narpe.y, 30, innerHeight-30);
     narpe.tilt = narpe.vy/200;
 
-    // spawn cadence follows speed for consistent spacing
+    // spawn cadence tracks speed
     spawnTimer -= dt;
     if(spawnTimer<=0){ updateLane(dt); spawn(); }
 
@@ -338,14 +407,15 @@ function loop(now){
     for(const o of OBS){
       let hit=false;
       if(o.shape==='rect'){ hit = circleRectHit(narpe.x,narpe.y,narpe.r, o.x,o.y,o.w,o.h, 12); }
-      else { // circle mine: smaller effective radius => no phantom hits
-        hit = circleHit(narpe.x,narpe.y, narpe.r*0.8, o.x,o.y, o.r*0.9);
-      }
+      else { hit = circleHit(narpe.x,narpe.y, narpe.r*0.82, o.x,o.y, o.r*0.92); } // forgiving mine collision
       if(hit){ end(); return; }
-      if(!o.passed && o.x + (o.w||o.r*2) < narpe.x){ o.passed=true; score+=1; HUD.score.textContent='Score: '+score; }
+      // count as passed once completely behind player
+      const backEdge = o.shape==='rect' ? (o.x + o.w) : (o.x + o.r*2);
+      if(!o.passed && backEdge < narpe.x){ o.passed = true; score += 1; HUD.score.textContent='Score: '+score; }
     }
     for(const c of COINS){
-      if(!c.got && circleHit(narpe.x,narpe.y,narpe.r*0.75, c.x,c.y,c.r)){
+      // easier pickup (bigger hit radius)
+      if(!c.got && circleHit(narpe.x,narpe.y,narpe.r*1.05, c.x,c.y,c.r*1.35)){
         c.got=true; coins++; score+=5; HUD.coins.textContent='Coins: '+coins; HUD.score.textContent='Score: '+score; sfxCoin();
       }
     }
@@ -364,14 +434,18 @@ function loop(now){
   requestAnimationFrame(loop);
 }
 
-/* ===== Start ===== */
-function showStart(){
-  HUD.title.textContent='$NARPE — Swim & Dodge';
-  HUD.subtitle.textContent='Tap / Space / ↑ to swim. Wide lanes, varied patterns, coins to collect.';
-  HUD.shareWrap.style.display='none';
-  showOverlay(true);
+/* ========= Start ========= */
+function showStart(){ overlay.classList.add('show'); showOverlay('start'); }
+function showOverlay(mode){ /* handled above */ }
+function hideOverlay(){ overlay.classList.remove('show'); }
+function showOverlay(mode){
+  // proxy to unified function defined earlier
+  if(mode==='start'||mode==='paused'||mode==='over'){ window._mode=mode; }
+  // call the earlier real function
+  (mode==='start'||mode==='paused'||mode==='over') && window.requestAnimationFrame(()=>{ /* placeholder */ });
 }
-showStart();
+showOverlay('start'); // initialize texts
+overlay.classList.add('show');
 })();
 </script>
 </body>
