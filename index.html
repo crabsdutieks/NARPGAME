@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>$NARPE Mini-Game — Swim & Dodge</title>
+<meta name="theme-color" content="#6a00ff" />
+<style>
+  :root{
+    --violet:#6a00ff; --night:#001f4d; --teal:#16c7be; --gold:#ffd75e;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0; background:linear-gradient(180deg,var(--violet),var(--night));
+    color:#fff; font-family:system-ui,-apple-system,Inter,Segoe UI,Roboto,"Helvetica Neue",Arial,sans-serif;
+    overflow:hidden;
+  }
+  #ui{
+    position:fixed; inset:0; pointer-events:none; display:flex; flex-direction:column; justify-content:space-between;
+    padding:env(safe-area-inset-top) 16px env(safe-area-inset-bottom) 16px;
+  }
+  .row{display:flex; align-items:center; justify-content:space-between; gap:8px}
+  .score{
+    background:rgba(0,0,0,.35); border:1px solid rgba(255,255,255,.18);
+    padding:8px 12px; border-radius:12px; backdrop-filter:blur(6px);
+    font-weight:800; letter-spacing:.3px
+  }
+  .btn{
+    pointer-events:auto; user-select:none; cursor:pointer;
+    background:var(--teal); color:#02131e; border:none; font-weight:900;
+    padding:10px 14px; border-radius:12px; box-shadow:0 6px 0 rgba(0,0,0,.35);
+    transition:transform .06s ease, filter .2s ease;
+  }
+  .btn:active{ transform:translateY(2px); box-shadow:0 4px 0 rgba(0,0,0,.35) }
+  #overlay{
+    position:fixed; inset:0; display:grid; place-items:center; background:rgba(0,0,0,.35);
+    backdrop-filter:blur(6px); pointer-events:auto;
+  }
+  .card{
+    width:min(560px,92vw); background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.04));
+    border:1px solid rgba(255,255,255,.16); border-radius:18px; padding:20px;
+    text-align:center;
+  }
+  h1{margin:.2rem 0 0; font-size:1.6rem}
+  p{margin:.4rem 0; color:#eef; opacity:.92}
+  #canvas{display:block; width:100vw; height:100vh}
+  .hint{font-size:.9rem; opacity:.85}
+</style>
+</head>
+<body>
+<canvas id="canvas"></canvas>
+
+<!-- UI -->
+<div id="ui">
+  <div class="row" style="padding:10px">
+    <div class="score" id="score">Score: 0</div>
+    <div class="row" style="gap:8px">
+      <div class="score" id="best">Best: 0</div>
+      <button id="pauseBtn" class="btn" aria-label="Pause">Pause</button>
+    </div>
+  </div>
+  <div class="row" style="padding:10px">
+    <a class="btn" href="/" style="background:var(--gold);">← Back to Site</a>
+    <button id="restartBtn" class="btn">Restart</button>
+  </div>
+</div>
+
+<!-- Overlay (Start/Game Over) -->
+<div id="overlay" hidden>
+  <div class="card">
+    <h1 id="title">NARPE — Swim & Dodge</h1>
+    <p id="subtitle">Tap / Space / ↑ to swim. Avoid ice & mines. Collect stars.</p>
+    <p class="hint">Mobile: tap anywhere · Desktop: Space or Arrow Up</p>
+    <div style="margin-top:10px;display:flex;gap:10px;justify-content:center">
+      <button id="playBtn" class="btn">Play</button>
+      <button id="howBtn" class="btn" style="background:#fff;color:#111">How to</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(()=>{
+// ---------- Canvas setup ----------
+const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+function resize(){
+  canvas.width = Math.floor(innerWidth * dpr);
+  canvas.height = Math.floor(innerHeight * dpr);
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+}
+addEventListener('resize', resize, {passive:true});
+resize();
+
+// ---------- Assets (narpe image optional) ----------
+const narpeImg = new Image();
+let narpeReady = false;
+narpeImg.onload = ()=> narpeReady = true;
+narpeImg.onerror = ()=> narpeReady = false;
+// If you add a file named 'narpe.png' next to this HTML, it will be used automatically:
+narpeImg.src = 'narpe.png';
+
+// ---------- Game state ----------
+let running = false, paused = false, gameOver = false;
+let tLast = 0, t = 0;
+const G = 1500;          // gravity (px/s^2)
+const SWIM = -520;       // swim impulse (px/s)
+const MAX_YVEL = 720;
+const narpe = {
+  x: innerWidth*0.24, y: innerHeight*0.5,
+  vx: 0, vy: 0,
+  r: 38, // collision radius
+  tilt: 0
+};
+const obstacles = [];
+const pickups = [];
+let spawnTimer = 0;
+let score = 0;
+let best = Number(localStorage.getItem('narpe_best')||0);
+const scoreEl = document.getElementById('score');
+const bestEl = document.getElementById('best');
+bestEl.textContent = 'Best: ' + best;
+
+// ---------- Helpers ----------
+function rand(a,b){ return a + Math.random()*(b-a); }
+function clamp(v,a,b){ return Math.max(a, Math.min(b,v)); }
+function circleHit(ax,ay,ar,bx,by,br){
+  const dx=ax-bx, dy=ay-by; return (dx*dx+dy*dy) < (ar+br)*(ar+br);
+}
+
+// ---------- Input ----------
+let press=false;
+function swim(){
+  if(!running){ startGame(); return; }
+  if(gameOver) return;
+  if(paused) return;
+  narpe.vy = SWIM;
+}
+addEventListener('keydown', (e)=>{
+  if([' ','ArrowUp','Spacebar'].includes(e.key)){ e.preventDefault(); swim(); }
+  if(e.key==='p') togglePause();
+});
+addEventListener('pointerdown', ()=> swim(), {passive:true});
+
+// ---------- UI controls ----------
+const overlay = document.getElementById('overlay');
+const title = document.getElementById('title');
+const subtitle = document.getElementById('subtitle');
+const playBtn = document.getElementById('playBtn');
+const howBtn = document.getElementById('howBtn');
+const pauseBtn = document.getElementById('pauseBtn');
+const restartBtn = document.getElementById('restartBtn');
+playBtn.onclick = ()=> startGame();
+howBtn.onclick = ()=> {
+  subtitle.textContent = 'Tap / Space / ↑ to swim up. Dodge obstacles, collect stars for +5. Score builds with distance.';
+};
+pauseBtn.onclick = togglePause;
+restartBtn.onclick = ()=> reset(true);
+
+function showOverlay(show){
+  overlay.hidden = !show;
+  overlay.style.pointerEvents = show ? 'auto' : 'none';
+}
+function togglePause(){
+  if(!running || gameOver) return;
+  paused = !paused;
+  pauseBtn.textContent = paused ? 'Resume' : 'Pause';
+  showOverlay(paused);
+  title.textContent = paused ? 'Paused' : 'NARPE — Swim & Dodge';
+  subtitle.textContent = paused ? 'Tap / Space / ↑ to continue.' : 'Tap / Space / ↑ to swim. Avoid ice & mines.';
+}
+
+// ---------- Game control ----------
+function startGame(){
+  if(running && !gameOver){ paused=false; showOverlay(false); return; }
+  reset(false);
+  running = true; paused = false; gameOver = false;
+  tLast = performance.now(); requestAnimationFrame(loop);
+  showOverlay(false);
+}
+function endGame(){
+  gameOver = true; running = false;
+  if(score > best){ best = score; localStorage.setItem('narpe_best', best); bestEl.textContent = 'Best: ' + best; }
+  showOverlay(true);
+  title.textContent = 'Game Over';
+  subtitle.textContent = `Score: ${score} — Best: ${best}`;
+}
+function reset(hard){
+  score = 0; scoreEl.textContent = 'Score: 0';
+  obstacles.length = 0; pickups.length = 0;
+  spawnTimer = 0;
+  narpe.x = innerWidth*0.24; narpe.y = innerHeight*0.5; narpe.vx = 0; narpe.vy = 0; narpe.tilt = 0;
+  if(hard){ running = false; paused = false; gameOver = false; showOverlay(true); title.textContent='NARPE — Swim & Dodge'; subtitle.textContent='Tap / Space / ↑ to swim. Avoid ice & mines. Collect stars.'; }
+}
+
+// ---------- Spawning ----------
+function spawn(){
+  const speed = 220 + Math.min(320, score*0.8); // ramps with score
+  const gap = clamp(180 - score*0.3, 110, 180);
+  const yMid = rand(innerHeight*0.28, innerHeight*0.72);
+
+  // top/bottom obstacles (ice/mine mix)
+  const types = ['ice','mine'];
+  const typeTop = types[Math.random()<0.6?0:1];
+  const typeBot = types[Math.random()<0.5?0:1];
+
+  obstacles.push({x: innerWidth + 40, y: yMid - gap/2 - 140, w: 60, h: 240, vx: -speed, type:typeTop, passed:false});
+  obstacles.push({x: innerWidth + 40, y: yMid + gap/2, w: 60, h: 240, vx: -speed, type:typeBot, passed:false});
+
+  // pickup star
+  pickups.push({x: innerWidth + 40 + 140, y: yMid + rand(-gap/3,gap/3), r: 12, vx: -speed, got:false});
+}
+
+// ---------- Drawing ----------
+function drawBackground(dt, time){
+  // parallax water layers
+  const w = innerWidth, h = innerHeight;
+  ctx.clearRect(0,0,w,h);
+
+  // deep ocean gradient
+  const g = ctx.createLinearGradient(0,0,0,h);
+  g.addColorStop(0,'#083a7c'); g.addColorStop(1,'#021833');
+  ctx.fillStyle = g; ctx.fillRect(0,0,w,h);
+
+  // light rays
+  for(let i=0;i<5;i++){
+    const x = (time*0.02 + i*220) % (w+220) - 220;
+    ctx.globalAlpha = 0.06;
+    ctx.fillStyle = '#7fd1ff';
+    ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x+140,0); ctx.lineTo(x+40,h); ctx.lineTo(x-100,h); ctx.closePath(); ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+
+  // bubbles field
+  const n=18;
+  for(let i=0;i<n;i++){
+    const bx = (time*0.13 + i* (w/n)) % (w+80) - 40;
+    const by = (time*0.06 + i*40) % (h+40) - 20;
+    ctx.globalAlpha = 0.35;
+    ctx.fillStyle = '#b8f0ff';
+    ctx.beginPath(); ctx.arc(bx, h-by, 3 + (i%3), 0, Math.PI*2); ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+}
+
+function drawNarpe(x,y,tilt){
+  if(narpeReady){
+    const sz = 96;
+    ctx.save();
+    ctx.translate(x,y);
+    ctx.rotate(tilt*0.04);
+    ctx.drawImage(narpeImg, -sz*0.6, -sz*0.6, sz*1.2, sz*1.2);
+    ctx.restore();
+  }else{
+    // fallback cartoon narwhal
+    ctx.save();
+    ctx.translate(x,y); ctx.rotate(tilt*0.04);
+    // body
+    ctx.fillStyle = '#bfe7ff';
+    ctx.beginPath(); ctx.ellipse(0,0,44,34,0,0,Math.PI*2); ctx.fill();
+    // belly
+    ctx.fillStyle = '#e8f7ff';
+    ctx.beginPath(); ctx.ellipse(0,8,26,20,0,0,Math.PI*2); ctx.fill();
+    // tail
+    ctx.fillStyle = '#bfe7ff';
+    ctx.beginPath(); ctx.moveTo(-40,8); ctx.quadraticCurveTo(-64,0,-44,-8); ctx.quadraticCurveTo(-28,0,-40,8); ctx.fill();
+    // horn
+    ctx.strokeStyle = '#503200'; ctx.lineWidth = 2;
+    ctx.fillStyle = '#ffd75e'; ctx.beginPath(); ctx.moveTo(22,-18); ctx.lineTo(58,-28); ctx.lineTo(20,-8); ctx.closePath(); ctx.fill(); ctx.stroke();
+    // eye/pepe-ish
+    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.ellipse(8,-4,12,10,0,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#000'; ctx.beginPath(); ctx.arc(12,-4,4,0,Math.PI*2); ctx.fill();
+    // mouth
+    ctx.strokeStyle = '#ed6a5a'; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(6,10,12,.2*Math.PI,.9*Math.PI); ctx.stroke();
+    ctx.restore();
+  }
+}
+
+function drawObstacle(o){
+  ctx.save();
+  ctx.translate(o.x,o.y);
+  if(o.type==='ice'){
+    ctx.fillStyle = '#9fe3ff';
+    ctx.strokeStyle = '#4aa7c7'; ctx.lineWidth = 2;
+    ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(o.w,10); ctx.lineTo(o.w,o.h); ctx.lineTo(0,o.h); ctx.closePath(); ctx.fill(); ctx.stroke();
+  }else{
+    // mine
+    ctx.fillStyle = '#5c6b7a';
+    ctx.beginPath(); ctx.arc(o.w*0.5,o.h*0.5, 24, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#7f8fa0';
+    for(let k=0;k<6;k++){
+      const a = k*Math.PI/3; const R=34;
+      ctx.beginPath(); ctx.arc(o.w*0.5 + Math.cos(a)*R, o.h*0.5 + Math.sin(a)*R, 4, 0, Math.PI*2); ctx.fill();
+    }
+  }
+  ctx.restore();
+}
+
+function drawPickup(p){
+  ctx.save();
+  ctx.translate(p.x,p.y);
+  const r = p.r;
+  const g = ctx.createRadialGradient(0,0,2,0,0,r);
+  g.addColorStop(0,'#fff5cc'); g.addColorStop(1,'#ffd75e');
+  ctx.fillStyle = g;
+  ctx.beginPath(); ctx.arc(0,0,r,0,Math.PI*2); ctx.fill();
+  ctx.strokeStyle = 'rgba(0,0,0,.35)'; ctx.lineWidth=2; ctx.stroke();
+  ctx.restore();
+}
+
+// ---------- Loop ----------
+function loop(now){
+  if(!running){ return; }
+  const dt = Math.min(0.04, (now - tLast)/1000); tLast = now; t += dt;
+
+  if(!paused){
+    // physics
+    narpe.vy += G*dt;
+    narpe.vy = clamp(narpe.vy, -Math.abs(SWIM)*1.2, MAX_YVEL);
+    narpe.y += narpe.vy * dt;
+    narpe.y = clamp(narpe.y, 30, innerHeight-30);
+    narpe.tilt = narpe.vy/200;
+
+    spawnTimer -= dt;
+    if(spawnTimer <= 0){
+      spawn();
+      spawnTimer = 1.25 - Math.min(0.8, score*0.002); // faster spawns with score
+    }
+
+    // move obstacles/pickups
+    for(const o of obstacles){ o.x += o.vx*dt; }
+    for(const p of pickups){ p.x += p.vx*dt; }
+
+    // collisions + scoring
+    for(const o of obstacles){
+      // treat obstacles as rectangles; use circle collision approx
+      const cx = clamp(narpe.x, o.x, o.x+o.w);
+      const cy = clamp(narpe.y, o.y, o.y+o.h);
+      const dx = narpe.x - cx, dy = narpe.y - cy;
+      if(dx*dx + dy*dy < (narpe.r*0.75)*(narpe.r*0.75)){ endGame(); return; }
+      if(!o.passed && o.x + o.w < narpe.x){ o.passed = true; score += 1; scoreEl.textContent = 'Score: ' + score; }
+    }
+    for(const p of pickups){
+      if(!p.got && circleHit(narpe.x,narpe.y,narpe.r*0.7, p.x,p.y,p.r)){
+        p.got = true; score += 5; scoreEl.textContent = 'Score: ' + score;
+      }
+    }
+
+    // cleanup
+    while(obstacles.length && obstacles[0].x + obstacles[0].w < -80) obstacles.shift();
+    while(pickups.length && pickups[0].x < -80) pickups.shift();
+  }
+
+  // draw
+  drawBackground(dt, t*60);
+  for(const o of obstacles){ drawObstacle(o); }
+  for(const p of pickups){ if(!p.got) drawPickup(p); }
+  drawNarpe(narpe.x, narpe.y, narpe.tilt);
+
+  if(running) requestAnimationFrame(loop);
+}
+
+// start screen
+showOverlay(true);
+})();
+</script>
+</body>
+</html>
