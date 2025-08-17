@@ -6,7 +6,7 @@
 <title>NARR DIVE — Flappy Narwhal</title>
 <style>
   :root{
-    --bg1:#0a1e4b; --bg2:#0e2f7a;
+    --bg1:#092047; --bg2:#0e2f7a;
     --ink:#072034; --white:#f8fbff;
     --aqua:#58fff1; --mint:#42ffd4; --mango:#ffd166;
     --coral:#ff6ea8; --ice:#bde7ff; --ice2:#e9f7ff;
@@ -17,6 +17,7 @@
   #wrap{position:relative;width:100vw;height:100vh}
   canvas{position:absolute;inset:0;width:100%;height:100%;display:block;background:transparent;z-index:1;touch-action:none}
 
+  /* HUD */
   .hud{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:space-between;padding:12px;z-index:3;pointer-events:none}
   .row{display:flex;justify-content:space-between;align-items:center}
   .score{font-size:clamp(28px,6vw,60px);font-weight:900;color:var(--mango);
@@ -24,6 +25,7 @@
   .best{opacity:.95;font-weight:800;text-shadow:0 2px 0 rgba(0,0,0,.35)}
   .hud .right{display:flex;gap:8px;pointer-events:auto}
 
+  /* Buttons (cartoon) */
   .btn{border:none;border-radius:18px;padding:12px 16px;font-weight:900;cursor:pointer;text-transform:uppercase;letter-spacing:.5px;
        background:linear-gradient(180deg,#22d6b7,#09b59a);box-shadow:0 6px 0 #0a836c,0 14px 20px rgba(0,0,0,.25);color:#053d3b}
   .btn:active{transform:translateY(3px);box-shadow:0 3px 0 #0a836c,0 8px 14px rgba(0,0,0,.25)}
@@ -32,11 +34,12 @@
 
   .pill{pointer-events:none;background:rgba(255,255,255,.12);padding:6px 10px;border-radius:999px;font-weight:900;letter-spacing:.3px;box-shadow:inset 0 0 0 2px rgba(255,255,255,.16)}
 
+  /* Screens */
   .screen{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:5;
     background:radial-gradient(120% 100% at 50% 0%, rgba(255,255,255,.08), rgba(0,0,0,.42) 60%, rgba(0,0,0,.6) 100%);
     backdrop-filter:blur(4px)}
   .hidden{display:none!important}
-  .card{width:min(92vw,680px);background:linear-gradient(180deg,rgba(255,255,255,.14),rgba(255,255,255,.08));
+  .card{width:min(92vw,720px);background:linear-gradient(180deg,rgba(255,255,255,.14),rgba(255,255,255,.08));
     border-radius:30px;padding:26px;box-shadow:0 18px 60px rgba(0,0,0,.45), inset 0 0 0 3px rgba(255,255,255,.12)}
   .title{font-size:clamp(30px,8vw,64px);margin:0 0 8px;color:var(--aqua);
     text-shadow:0 4px 0 #053144, 0 0 22px rgba(88,255,241,.5); letter-spacing:1px}
@@ -44,6 +47,7 @@
   .grid{display:grid;gap:12px}.cols-2{grid-template-columns:1fr 1fr}
   .select,.range{appearance:none;background:rgba(255,255,255,.14);color:var(--white);border:none;border-radius:14px;padding:10px 12px;font-weight:900}
 
+  /* Game Over */
   .overScore{font-size:clamp(36px,8vw,72px);font-weight:900;color:var(--mango);
     text-shadow:0 4px 0 rgba(0,0,0,.4),0 0 22px rgba(255,209,102,.45); margin:10px 0}
   .overBest{font-size:clamp(16px,4vw,22px); opacity:.95; font-weight:800}
@@ -55,6 +59,7 @@
 <div id="wrap">
   <canvas id="game" aria-label="NARR DIVE game canvas"></canvas>
 
+  <!-- HUD -->
   <div class="hud" id="hud">
     <div class="row">
       <div>
@@ -72,21 +77,23 @@
     </div>
   </div>
 
+  <!-- MENU -->
   <section id="menu" class="screen">
     <div class="card">
       <h1 class="title">$NARR — NARR DIVE</h1>
-      <p class="subtitle">Cartoon Narwhal vs. Glaciers, Mines & Pearls — Swim through the gaps!</p>
+      <p class="subtitle">Dive with <b>Narr the Narwhal</b> through shifting ice caves, dodge mines, grab glowing pearls, and ride the current. Smooth, catchy, endlessly replayable.</p>
       <div class="grid cols-2" style="margin-bottom:10px">
         <button id="playBtn" class="btn" type="button">▶ Play</button>
         <button id="optsBtn" class="btn alt" type="button">⚙ Options</button>
       </div>
       <div class="grid">
         <div class="row"><span style="font-weight:900">Controls</span><span>Space / Click / Tap</span></div>
-        <div class="row"><span style="font-weight:900">Goal</span><span>Earn points as you advance. Pearls = bonus!</span></div>
+        <div class="row"><span style="font-weight:900">Goal</span><span>Advance to score; pearls = bonus!</span></div>
       </div>
     </div>
   </section>
 
+  <!-- OPTIONS -->
   <section id="options" class="screen hidden">
     <div class="card">
       <h2 class="title" style="font-size:clamp(24px,6vw,42px)">Options</h2>
@@ -101,6 +108,7 @@
     </div>
   </section>
 
+  <!-- PAUSE -->
   <section id="pause" class="screen hidden">
     <div class="card" style="text-align:center">
       <h2 class="title" style="font-size:clamp(24px,6vw,42px)">Paused</h2>
@@ -112,6 +120,7 @@
     </div>
   </section>
 
+  <!-- GAME OVER -->
   <section id="over" class="screen hidden">
     <div class="card" style="text-align:center; position:relative; overflow:hidden;">
       <h2 class="title" style="font-size:clamp(26px,6vw,48px); color:var(--coral); text-shadow:0 4px 0 rgba(0,0,0,.4)">Game Over</h2>
@@ -122,6 +131,10 @@
         <button id="restartBtn" class="btn" type="button">↻ Restart</button>
         <button id="overOptsBtn" class="btn alt" type="button">⚙ Options</button>
       </div>
+      <div class="grid cols-2" style="margin-top:12px">
+        <button id="tweetBtn" class="btn" type="button">Share on X (Twitter)</button>
+        <button id="submitScoreBtn" class="btn alt" type="button">Submit to Leaderboard</button>
+      </div>
       <canvas id="confetti" class="confetti"></canvas>
     </div>
   </section>
@@ -131,18 +144,35 @@
 (() => {
   'use strict';
 
+  /* =================== CONFIG (edit if you add backend) =================== */
+  const GAME_VERSION = '1.3.0';
+  const GAME_URL = location.origin + location.pathname; // link in tweets
+  const SCORE_API = null; // e.g. 'https://api.yourdomain.com/narr'
+  // Backend protocol (summary):
+  // 1) POST SCORE_API + '/session'  -> { session:string, seed:uint32 }
+  // 2) Client plays using that seed, recording inputs [{t,type:'tap'}] and duration.
+  // 3) POST SCORE_API + '/submit'   -> body { session, version, score, durationMs, seed, inputs:[...], meta:{w,h,ts} }
+  // Server re-simulates deterministically and rejects tampered runs. Weekly winners = top verified scores in time window.
+
+  /* ======================= Shortcuts & Deterministic RNG ======================= */
   const $ = id => document.getElementById(id);
   const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
-  const rand = (a,b)=>Math.random()*(b-a)+a;
 
-  /* Save */
-  const STORAGE='NARR_DIVE_SAVE_V3';
-  const DEFAULT={ best:0, opts:{ music:0.6, sfx:0.9, muted:false } };
+  // Deterministic RNG (mulberry32)
+  function makeRng(seed){ let a=seed>>>0; return ()=>{ a|=0; a=(a+0x6D2B79F5)|0; let t=Math.imul(a^(a>>>15),1|a); t=(t+Math.imul(t^(t>>>7),61|t))^t; return ((t^(t>>>14))>>>0)/4294967296; }; }
+  let SEED = 123456789, RNG = makeRng(SEED);
+  const R = (min,max)=> RNG()*(max-min)+min;
+  const Rint = (min,max)=> (R(min,max)|0);
+  const Rchance = (p)=> RNG()<p;
+
+  /* =============================== Save =============================== */
+  const STORAGE='NARR_DIVE_SAVE_V4';
+  const DEFAULT={ best:0, opts:{ music:0.7, sfx:0.9, muted:false } };
   let SAVE = (()=>{ try{ const r=localStorage.getItem(STORAGE); if(!r) return JSON.parse(JSON.stringify(DEFAULT));
     const p=JSON.parse(r); return { ...DEFAULT, ...p, opts:{...DEFAULT.opts, ...(p.opts||{}) } }; }catch(_){ return JSON.parse(JSON.stringify(DEFAULT)); }})();
   const commit = ()=>{ try{ localStorage.setItem(STORAGE, JSON.stringify(SAVE)); }catch(_){ } };
 
-  /* Canvas */
+  /* ============================== Canvas ============================== */
   const canvas = $('game');
   const ctx = canvas.getContext('2d', { alpha:true });
   let DPR = Math.max(1, Math.min(2, devicePixelRatio||1));
@@ -151,51 +181,112 @@
     canvas.width=Math.round(view.w*DPR); canvas.height=Math.round(view.h*DPR); ctx.setTransform(DPR,0,0,DPR,0,0); }
   addEventListener('resize', resize, {passive:true}); resize();
 
-  /* Audio (optional) */
-  let AC=null, musicGain=null, sfxGain=null, musicTimer=null, bpm=98;
-  function audioInit(){
-    try{
-      const C = window.AudioContext || window.webkitAudioContext; if(!C) return;
-      AC = AC || new C();
-      const master = AC.createGain(); musicGain = AC.createGain(); sfxGain = AC.createGain();
-      musicGain.gain.value = SAVE.opts.muted?0:SAVE.opts.music; sfxGain.gain.value = SAVE.opts.muted?0:SAVE.opts.sfx;
-      musicGain.connect(master); sfxGain.connect(master); master.connect(AC.destination);
-      if(!musicTimer){ const step = 60/bpm; let i=0; const seq=[392,440,523,587,523,440,392,349];
-        musicTimer=setInterval(()=>{ const o=AC.createOscillator(), g=AC.createGain(); o.type='triangle'; o.frequency.value=seq[i%seq.length];
-          const t=AC.currentTime; g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.16,t+0.02); g.gain.exponentialRampToValueAtTime(0.0001,t+step*0.9);
-          o.connect(g).connect(musicGain); o.start(t); o.stop(t+step); i++; }, step*1000); }
-    }catch(_){ }
-  }
+  /* ============================== Music & SFX ============================== */
+  // Cooler track: chord pad + arpeggio + bass + simple kick/snare-ish ticks
+  let AC=null, gMaster=null, gMusic=null, gSfx=null, musicClock=null;
+  const Music={
+    step:0, tempo:92, // bpm
+    chordIdx:0,
+    chords:[[0,7,12,16],[2,9,14,19],[5,12,17,21],[4,11,16,21]], // relative semitones
+    baseNote:220, // A3
+    init(){
+      try{
+        const C=window.AudioContext||window.webkitAudioContext; if(!C) return;
+        AC=AC||new C();
+        gMaster=AC.createGain(); gMusic=AC.createGain(); gSfx=AC.createGain();
+        gMusic.gain.value = SAVE.opts.muted?0:SAVE.opts.music;
+        gSfx.gain.value = SAVE.opts.muted?0:SAVE.opts.sfx;
+        gMusic.connect(gMaster); gSfx.connect(gMaster); gMaster.connect(AC.destination);
+      }catch(_){}
+    },
+    hzFromSemi(base,semi){ return base*Math.pow(2,semi/12); },
+    tone(freq, dur, type='sine', gain=0.15, out=gMusic){
+      if(!AC) return;
+      const t=AC.currentTime;
+      const o=AC.createOscillator(), g=AC.createGain();
+      o.type=type; o.frequency.value=freq;
+      g.gain.setValueAtTime(0.0001,t);
+      g.gain.exponentialRampToValueAtTime(gain,t+0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001,t+dur*0.95);
+      o.connect(g).connect(out); o.start(t); o.stop(t+dur);
+    },
+    noiseSnare(dur=0.08, gain=0.12){
+      if(!AC) return;
+      const b=AC.createBuffer(1, AC.sampleRate*dur, AC.sampleRate);
+      const d=b.getChannelData(0); for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,2);
+      const n=AC.createBufferSource(), g=AC.createGain(); g.gain.value=gain;
+      n.buffer=b; n.connect(g).connect(gMusic); n.start();
+    },
+    kick(freq=90, dur=0.16, gain=0.25){
+      if(!AC) return;
+      const t=AC.currentTime;
+      const o=AC.createOscillator(), g=AC.createGain();
+      o.type='sine'; o.frequency.setValueAtTime(freq,t); o.frequency.exponentialRampToValueAtTime(40,t+dur);
+      g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(gain,t+0.02); g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+      o.connect(g).connect(gMusic); o.start(t); o.stop(t+dur);
+    },
+    start(){
+      if(!AC||musicClock) return;
+      const spb=60/this.tempo; const sixteenth=spb/4;
+      musicClock=setInterval(()=>{ try{
+        const s=this.step++%64;
+        // chord pad every bar (attack then fade)
+        if(s%16===0){
+          const chord=this.chords[this.chordIdx++%this.chords.length];
+          chord.forEach((semi,i)=> this.tone(this.hzFromSemi(this.baseNote,semi), 0.8, 'triangle', 0.06*(i<2?1:0.8)));
+        }
+        // arpeggio on 16th
+        const arpSemi=[0,7,12,16,12,7,0,7][s%8];
+        this.tone(this.hzFromSemi(this.baseNote,arpSemi+12), 0.12, 'sawtooth', 0.045);
+        // bass on 8ths
+        if(s%2===0){
+          const bassSemi=[0,0,2,2,5,5,4,4][Math.floor(s/8)%8];
+          this.tone(this.hzFromSemi(this.baseNote/2,bassSemi), 0.18,'sine',0.09);
+        }
+        // kick/snare grid
+        if(s%4===0) this.kick();
+        if(s%8===4) this.noiseSnare();
+      }catch(_){ } }, sixteenth*1000);
+    },
+    stop(){ if(musicClock){ clearInterval(musicClock); musicClock=null; } },
+    setMuted(m){ if(!gMusic||!gSfx) return; gMusic.gain.value=m?0:SAVE.opts.music; gSfx.gain.value=m?0:SAVE.opts.sfx; },
+    setMusic(v){ if(gMusic) gMusic.gain.value=SAVE.opts.muted?0:v; },
+    setSfx(v){ if(gSfx) gSfx.gain.value=SAVE.opts.muted?0:v; }
+  };
   function sfx(type){
-    if(!AC||!sfxGain) return;
+    if(!AC||!gSfx) return;
     const t=AC.currentTime;
-    if(type==='flap'){ const o=AC.createOscillator(),g=AC.createGain();
+    if(type==='flap'){
+      const o=AC.createOscillator(), g=AC.createGain();
       o.type='triangle'; o.frequency.setValueAtTime(620,t); o.frequency.exponentialRampToValueAtTime(420,t+0.08);
       g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.22,t+0.02); g.gain.exponentialRampToValueAtTime(0.0001,t+0.12);
-      o.connect(g).connect(sfxGain); o.start(t); o.stop(t+0.14); }
-    else if(type==='coin'){ const o=AC.createOscillator(),g=AC.createGain();
+      o.connect(g).connect(gSfx); o.start(t); o.stop(t+0.14);
+    } else if(type==='coin'){
+      const o=AC.createOscillator(), g=AC.createGain();
       o.type='square'; o.frequency.setValueAtTime(1200,t); o.frequency.exponentialRampToValueAtTime(1680,t+0.06);
       g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.28,t+0.02); g.gain.exponentialRampToValueAtTime(0.0001,t+0.12);
-      o.connect(g).connect(sfxGain); o.start(t); o.stop(t+0.13); }
-    else if(type==='hit'){ const b=AC.createBuffer(1, AC.sampleRate*0.25, AC.sampleRate), d=b.getChannelData(0);
+      o.connect(g).connect(gSfx); o.start(t); o.stop(t+0.13);
+    } else if(type==='hit'){
+      const b=AC.createBuffer(1, AC.sampleRate*0.25, AC.sampleRate), d=b.getChannelData(0);
       for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*(1-i/d.length);
       const n=AC.createBufferSource(), g=AC.createGain(); g.gain.setValueAtTime(0.25,t); g.gain.exponentialRampToValueAtTime(0.0001,t+0.25);
-      n.buffer=b; n.connect(g).connect(sfxGain); n.start(t); }
+      n.buffer=b; n.connect(g).connect(gSfx); n.start(t);
+    }
   }
 
-  /* UI refs */
+  /* ============================ UI refs ============================ */
   const screenMenu=$('menu'), screenOptions=$('options'), screenPause=$('pause'), screenOver=$('over');
   const playBtn=$('playBtn'), optsBtn=$('optsBtn'), backBtn=$('backBtn'), saveBtn=$('saveBtn');
   const pauseBtn=$('pauseBtn'), muteBtn=$('muteBtn'), resumeBtn=$('resumeBtn'), quitBtn=$('quitBtn');
-  const restartBtn=$('restartBtn'), overOptsBtn=$('overOptsBtn');
+  const restartBtn=$('restartBtn'), overOptsBtn=$('overOptsBtn'), tweetBtn=$('tweetBtn'), submitScoreBtn=$('submitScoreBtn');
   const scoreEl=$('score'), bestEl=$('best'), finalScoreEl=$('finalScore'), finalBestEl=$('finalBest'), overMsg=$('overMsg');
   const rngMusic=$('music'), rngSfx=$('sfx'); bestEl.textContent=SAVE.best|0;
 
-  /* Game state & params */
+  /* ======================= Game state & params ======================= */
   const WORLD={
-    baseSpeed:150, speed:150, maxSpeed:260, accel:2.2,
+    baseSpeed:150, speed:150, maxSpeed:275, accel:2.1,
     gravity:1800, flap:480,
-    gapBase:240, gapVar:0.28,
+    gapBase:240, gapVar:0.30,
     spawnMin:1.15, spawnMax:1.65,
     mineChance:0.55, coinChance:0.85
   };
@@ -210,48 +301,56 @@
   let spawnTimer=0, score=0, running=false, state='menu', last=performance.now();
   let distAccum=0; const DIST_PER_POINT=120; const COIN_BONUS=10;
 
-  function resetGame(){
-    player.x = view.w*0.28; player.y = view.h*0.5; player.vy=0; player.alive=true; player.rot=0;
-    obstacles.length=0; coins.length=0; mines.length=0; poofs.length=0; fish.length=0;
-    score=0; spawnTimer=0; scoreEl.textContent='0'; distAccum=0;
-    WORLD.speed = WORLD.baseSpeed;
-    seedFish();
+  /* ==================== Replay for anti-cheat ==================== */
+  let session=null;            // from backend
+  let startEpoch=0;            // ms timestamp
+  let replayInputs=[];         // [{t:ms,type:'tap'}]
+  function recordTap(){ if(state==='playing') replayInputs.push({t:Date.now()-startEpoch, type:'tap'}); }
+  function buildSubmission(){
+    return {
+      session, version:GAME_VERSION,
+      url: GAME_URL,
+      score, durationMs: Date.now()-startEpoch,
+      seed: SEED>>>0,
+      inputs: replayInputs.slice(0, 20000), // cap
+      meta:{ w:view.w, h:view.h, ts:startEpoch }
+    };
   }
 
-  /* Spawners */
+  /* ========================= Spawners ========================= */
   function spawnObstacle(){
-    const w = Math.max(70, Math.min(120, view.w*0.18)) * (0.9 + Math.random()*0.25);
+    const w = Math.max(70, Math.min(120, view.w*0.18)) * (0.9 + RNG()*0.25);
     const padTop = 50, padBottom = 90;
-    const gap = WORLD.gapBase * (view.h/800) * (1 + rand(-WORLD.gapVar, WORLD.gapVar));
+    const gap = WORLD.gapBase * (view.h/800) * (1 + (RNG()*2-1)*WORLD.gapVar);
     const maxY = view.h - padBottom - gap;
-    const gapTop = rand(padTop, maxY);
+    const gapTop = R( padTop, maxY );
     const x = view.w + w;
-    const phase = Math.random()*Math.PI*2;
+    const phase = RNG()*Math.PI*2;
     obstacles.push({ x, w, topH:gapTop, bottomY:gapTop+gap, phase });
 
-    if(Math.random() < WORLD.coinChance){
-      const count = Math.random()<0.5 ? 1 : 3;
+    if(Rchance(WORLD.coinChance)){
+      const count = Rchance(0.5) ? 1 : 3;
       for(let i=0;i<count;i++){
         const yy = gapTop + gap*0.2 + i*(gap*0.6/Math.max(1,count-1));
-        coins.push({ x:x + w*0.5 + i*24, y:yy, r: Math.max(12, view.w*0.025), spin: Math.random()*Math.PI*2 });
+        coins.push({ x:x + w*0.5 + i*24, y:yy, r: Math.max(12, view.w*0.025), spin: RNG()*Math.PI*2 });
       }
     }
-    if(Math.random() < WORLD.mineChance){
-      const mcount = Math.random()<0.7 ? 1 : 2;
+    if(Rchance(WORLD.mineChance)){
+      const mcount = Rchance(0.7) ? 1 : 2;
       for(let i=0;i<mcount;i++){
-        const my = gapTop + gap*0.5 + rand(-gap*0.25, gap*0.25);
-        const mx = x + w + rand(30,70) + i*rand(20,50);
-        mines.push({ x:mx, y:my, r: Math.max(16, view.w*0.03), phase: Math.random()*Math.PI*2, speed: rand(0.8,1.6) });
+        const my = gapTop + gap*0.5 + R(-gap*0.25, gap*0.25);
+        const mx = x + w + R(30,70) + i*R(20,50);
+        mines.push({ x:mx, y:my, r: Math.max(16, view.w*0.03), phase: RNG()*Math.PI*2, speed: R(0.8,1.6) });
       }
     }
-    spawnTimer = rand(WORLD.spawnMin, WORLD.spawnMax);
+    spawnTimer = R(WORLD.spawnMin, WORLD.spawnMax);
   }
 
-  /* Background life */
+  /* ====================== Background life ====================== */
   function seedFish(){
     const count = 10;
     for(let i=0;i<count;i++){
-      fish.push({ x:rand(0,view.w), y:rand(view.h*0.25, view.h*0.85), s:rand(20,50), v:rand(20,60), t:Math.random()*6.28 });
+      fish.push({ x:R(0,view.w), y:R(view.h*0.25, view.h*0.85), s:R(20,50), v:R(20,60), t:R(0,6.28) });
     }
   }
   function drawFish(dt,t){
@@ -260,7 +359,7 @@
       f.t += dt*f.v*0.02;
       f.x -= f.v*dt*0.4;
       f.y += Math.sin(f.t)*0.15;
-      if(f.x < -40){ f.x = view.w + rand(0,200); f.y = rand(view.h*0.25, view.h*0.85); }
+      if(f.x < -40){ f.x = view.w + R(0,200); f.y = R(view.h*0.25, view.h*0.85); }
       ctx.beginPath();
       ctx.ellipse(f.x,f.y, f.s*0.12, f.s*0.06, 0, 0, Math.PI*2);
       ctx.fill();
@@ -284,311 +383,26 @@
     }
   }
 
-  /* Particles */
+  /* ========================== Particles ========================== */
   function addPoof(x,y,n,color='rgba(255,255,255,0.9)'){
     for(let i=0;i<n;i++){
-      poofs.push({x,y,vx:rand(-120,120),vy:rand(-160,0),g:520,life:rand(0.4,0.8),r:rand(2,4),c:color});
+      poofs.push({x,y,vx:R(-120,120),vy:R(-160,0),g:520,life:R(0.4,0.8),r:R(2,4),c:color});
     }
   }
 
-  /* Cartoon helpers */
+  /* ====================== Cartoon helpers & draw ====================== */
   function strokeFill(fill, stroke='#06263b', lw=4){ ctx.fillStyle=fill; ctx.strokeStyle=stroke; ctx.lineWidth=lw; }
   function roundRect(x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y);
     ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
 
-  /* Draw */
   function drawBackground(t){
     const w=view.w, h=view.h;
+    // light rays
     for(let i=0;i<6;i++){
       const x=((t*8+i*260)%(w+260))-260;
       const g=ctx.createLinearGradient(x,0,x+260,h);
       g.addColorStop(0,'rgba(255,255,255,0.03)'); g.addColorStop(1,'rgba(255,255,255,0)');
       ctx.fillStyle=g; ctx.fillRect(x,0,260,h);
     }
-    for(let i=0;i<3;i++){ const yy=h*0.55+Math.sin(t*0.6+i)*12; ctx.fillStyle='rgba(255,255,255,0.05)'; ctx.fillRect(0,yy,w,6); }
-    ctx.globalAlpha=0.22; ctx.fillStyle='#bde7ff';
-    const yBase=h*0.18;
-    for(let i=0;i<4;i++){
-      const ox=((-t*12)+i*(w/3))%(w+200)-200;
-      ctx.beginPath();
-      ctx.moveTo(ox,yBase);
-      ctx.lineTo(ox+80,yBase-18);
-      ctx.lineTo(ox+140,yBase);
-      ctx.lineTo(ox+200,yBase-12);
-      ctx.lineTo(ox+260,yBase);
-      ctx.lineTo(ox+260,yBase+24);
-      ctx.lineTo(ox,yBase+24);
-      ctx.closePath(); ctx.fill();
-    }
-    ctx.globalAlpha=1;
-  }
-
-  function drawGlacierColumn(x,w,hTop,isTop,t){
-    ctx.save(); ctx.translate(x, isTop?0:hTop);
-    const g=ctx.createLinearGradient(0,0,0,isTop?hTop:(view.h-hTop));
-    g.addColorStop(0, '#d9f3ff'); g.addColorStop(1, '#9fdfff');
-    strokeFill(g, '#053144', 5);
-    ctx.beginPath();
-    if(isTop){
-      ctx.moveTo(0,hTop);
-      const spikes = Math.max(5, Math.floor(w/18));
-      for(let i=0;i<=spikes;i++){
-        const sx=i*(w/spikes);
-        const sy=hTop - ((i%2?22:14) + (i>0&&i<spikes? Math.sin((t*0.8+i)*0.8)*6:0));
-        ctx.lineTo(sx, sy);
-      }
-      ctx.lineTo(w,0); ctx.lineTo(0,0);
-    }else{
-      ctx.moveTo(0,0);
-      const spikes = Math.max(5, Math.floor(w/18));
-      for(let i=0;i<=spikes;i++){
-        const sx=i*(w/spikes);
-        const sy=(i%2?22:14) + (i>0&&i<spikes? Math.sin((t*0.8+i)*0.8)*6:0);
-        ctx.lineTo(sx, sy);
-      }
-      ctx.lineTo(w, view.h-hTop); ctx.lineTo(0, view.h-hTop);
-    }
-    ctx.closePath(); ctx.fill(); ctx.stroke();
-    ctx.globalAlpha=.25; ctx.fillStyle='white';
-    ctx.fillRect(6, isTop? hTop-10 : 0, Math.max(10, w*0.12), 8);
-    ctx.globalAlpha=1;
-    ctx.restore();
-  }
-
-  function drawMine(m, t){
-    const r = m.r;
-    const bob = Math.sin(t*2*m.speed + m.phase)*2;
-    const y = m.y + bob;
-    strokeFill('#243a4e','#031524',5);
-    ctx.beginPath(); ctx.arc(m.x, y, r, 0, Math.PI*2); ctx.fill(); ctx.stroke();
-    ctx.fillStyle='#b8c7d4';
-    for(let i=0;i<8;i++){
-      const a=i*Math.PI/4, sx=Math.cos(a), sy=Math.sin(a);
-      ctx.beginPath();
-      ctx.moveTo(m.x+sx*r*0.7, y+sy*r*0.7);
-      ctx.lineTo(m.x+sx*r*1.25, y+sy*r*1.25);
-      ctx.lineTo(m.x+sx*r*0.6 - sy*r*0.12, y+sy*r*0.6 + sx*r*0.12);
-      ctx.closePath(); ctx.fill();
-    }
-    ctx.fillStyle='#e3eef7';
-    for(let i=0;i<6;i++){ const ang=i*Math.PI/3+(t*2); ctx.beginPath(); ctx.arc(m.x+Math.cos(ang)*r*0.45, y+Math.sin(ang)*r*0.45, r*0.08, 0, Math.PI*2); ctx.fill(); }
-  }
-
-  function drawPearl(c, t){
-    const r=c.r;
-    const grad = ctx.createRadialGradient(c.x, c.y, r*0.2, c.x, c.y, r*1.2);
-    grad.addColorStop(0,'rgba(255,255,255,0.9)');
-    grad.addColorStop(1,'rgba(255,255,255,0)');
-    ctx.fillStyle=grad; ctx.beginPath(); ctx.arc(c.x, c.y, r*1.2, 0, Math.PI*2); ctx.fill();
-
-    const core = ctx.createRadialGradient(c.x-r*0.2, c.y-r*0.2, r*0.1, c.x, c.y, r);
-    core.addColorStop(0,'#ffffff'); core.addColorStop(1,'#d7f6ff');
-    strokeFill(core, '#86c6da', 4);
-    ctx.beginPath(); ctx.arc(c.x, c.y, r, 0, Math.PI*2); ctx.fill(); ctx.stroke();
-
-    const a = t*4 + c.spin;
-    ctx.strokeStyle='rgba(88,255,241,0.9)'; ctx.lineWidth=3;
-    ctx.beginPath(); ctx.ellipse(c.x, c.y, r*1.25, r*0.55, a, 0, Math.PI*2); ctx.stroke();
-  }
-
-  function drawNarwhal(p){
-    const r = Math.max(16, view.w*0.045); p.r = r;
-    ctx.save(); ctx.translate(p.x, p.y); ctx.rotate(p.rot);
-    const bw=r*2.2, bh=r*1.35;
-    const g=ctx.createLinearGradient(-bw*0.5,-bh*0.2,bw*0.7,bh*0.5);
-    g.addColorStop(0,'#aaf0ff'); g.addColorStop(0.5,'#6dd6ff'); g.addColorStop(1,'#3fb6ff');
-    strokeFill(g, '#053144', 5);
-    roundPath(-bw*0.5,-bh*0.5,bw,bh,bh*0.5); ctx.fill(); ctx.stroke();
-    strokeFill('rgba(255,255,255,0.85)', '#053144', 3);
-    roundPath(-bw*0.28,-bh*0.12,bw*0.7,bh*0.6,bh*0.3); ctx.fill(); ctx.stroke();
-    ctx.fillStyle='#072034'; ctx.beginPath(); ctx.arc(bw*0.15,-bh*0.08,r*0.18,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle='white'; ctx.beginPath(); ctx.arc(bw*0.18,-bh*0.12,r*0.07,0,Math.PI*2); ctx.fill();
-    strokeFill('#58d8ff', '#053144', 4); ctx.beginPath(); ctx.ellipse(-r*0.1, r*0.35, r*0.5, r*0.25, 0, 0, Math.PI*2); ctx.fill(); ctx.stroke();
-    ctx.save(); ctx.translate(-bw*0.56, 0); const flap=Math.sin(performance.now()*0.008)*r*0.18; ctx.rotate(flap*0.02);
-    strokeFill('#58d8ff', '#053144', 4); ctx.beginPath(); ctx.moveTo(0,0);
-    ctx.quadraticCurveTo(-r*0.6,-r*0.6,-r*1.0,-r*0.2); ctx.quadraticCurveTo(-r*0.3,0,0,0);
-    ctx.moveTo(0,0);
-    ctx.quadraticCurveTo(-r*0.6,r*0.6,-r*1.0,r*0.2); ctx.quadraticCurveTo(-r*0.3,0,0,0);
-    ctx.fill(); ctx.stroke(); ctx.restore();
-    ctx.save(); ctx.translate(bw*0.6, -r*0.05); ctx.rotate(-0.07);
-    strokeFill('#f7f1d9', '#8c845c', 4); ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(r*1.4,-r*0.15); ctx.lineTo(r*1.4,r*0.15); ctx.closePath(); ctx.fill(); ctx.stroke();
-    ctx.restore(); ctx.restore();
-    function roundPath(x,y,w,h,rr){ roundRect(x,y,w,h,rr); }
-  }
-
-  function drawScene(t, dt){
-    ctx.clearRect(0,0,view.w,view.h);
-    drawBackground(t);
-    drawFish(dt,t);
-    drawSeaweed(t);
-    for(const o of obstacles){
-      const sway = Math.sin(t*0.9 + o.phase)*4;
-      drawGlacierColumn(o.x, o.w, o.topH + sway, true, t);
-      drawGlacierColumn(o.x, o.w, o.bottomY + sway, false, t);
-    }
-    for(const c of coins) drawPearl(c, t);
-    for(const m of mines) drawMine(m, t);
-    drawNarwhal(player);
-    // draw poofs
-    for(let i=poofs.length-1;i>=0;i--){
-      const p=poofs[i];
-      ctx.globalAlpha = Math.max(0,p.life);
-      ctx.fillStyle = p.c; ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI*2); ctx.fill();
-      ctx.globalAlpha = 1;
-    }
-  }
-
-  /* Collisions */
-  function circleRectCollide(cx, cy, cr, rx, ry, rw, rh){
-    const nx = clamp(cx, rx, rx+rw), ny = clamp(cy, ry, ry+rh);
-    const dx = cx - nx, dy = cy - ny;
-    return (dx*dx + dy*dy) <= cr*cr;
-  }
-  function circleCircleHit(ax,ay,ar, bx,by,br){ const dx=ax-bx, dy=ay-by; return dx*dx+dy*dy <= (ar+br)*(ar+br)*0.95; }
-
-  /* Loop */
-  function update(dt, t){
-    WORLD.speed = clamp(WORLD.speed + WORLD.accel*dt, WORLD.baseSpeed, WORLD.maxSpeed);
-
-    spawnTimer -= dt;
-    if (spawnTimer <= 0){ spawnObstacle(); }
-
-    if (input.tap && state==='playing' && player.alive){
-      player.vy = -WORLD.flap * (view.h/800);
-      sfx('flap');
-      addPoof(player.x-6, player.y+4, 6, 'rgba(255,255,255,0.9)');
-    }
-    input.tap = false;
-
-    player.vy += WORLD.gravity * dt * (view.h/800);
-    player.vy = clamp(player.vy, -10000, 10000);
-    player.y += player.vy * dt;
-    player.rot = (player.vy/1000)*0.5;
-
-    const speed = WORLD.speed * (view.w/480);
-    for(const o of obstacles) o.x -= speed * dt;
-    for(const c of coins) c.x -= speed * dt;
-    for(const m of mines) m.x -= speed * dt;
-
-    while(obstacles.length && obstacles[0].x + obstacles[0].w < -60) obstacles.shift();
-    for(let i=coins.length-1;i>=0;i--) if(coins[i].x + coins[i].r < -40) coins.splice(i,1);
-    for(let i=mines.length-1;i>=0;i--) if(mines[i].x + mines[i].r < -40) mines.splice(i,1);
-
-    for(let i=poofs.length-1;i>=0;i--){ const p=poofs[i]; p.vy += p.g*dt; p.x += p.vx*dt; p.y += p.vy*dt; p.life -= dt; if(p.life<=0) poofs.splice(i,1); }
-
-    distAccum += WORLD.speed * dt;
-    while(distAccum >= DIST_PER_POINT){ distAccum -= DIST_PER_POINT; score++; scoreEl.textContent = String(score); }
-
-    if (player.y - player.r < 0 || player.y + player.r > view.h) return endGame();
-
-    for(const o of obstacles){
-      if(circleRectCollide(player.x, player.y, player.r, o.x, 0, o.w, o.topH) ||
-         circleRectCollide(player.x, player.y, player.r, o.x, o.bottomY, o.w, view.h - o.bottomY)){
-        return endGame();
-      }
-    }
-
-    for(let i=coins.length-1;i>=0;i--){
-      const c = coins[i];
-      if(circleCircleHit(player.x,player.y,player.r*0.9, c.x,c.y,c.r*0.85)){
-        coins.splice(i,1);
-        score += 10; scoreEl.textContent = String(score);
-        sfx('coin'); addPoof(c.x, c.y, 12, 'rgba(255,255,255,0.95)');
-      }
-    }
-
-    for(const m of mines){
-      if(circleCircleHit(player.x,player.y,player.r*0.9, m.x,m.y,m.r)){ return endGame(); }
-    }
-  }
-
-  function render(t, dt){ drawScene(t, dt); }
-
-  function loop(){
-    if(!running) return;
-    const n=performance.now(); let dt=(n-last)/1000; last=n; dt=Math.min(0.033,dt);
-    if(state==='playing') update(dt, n*0.001);
-    render(n*0.001, dt);
-    requestAnimationFrame(loop);
-  }
-
-  /* Flow */
-  function start(){
-    resetGame(); state='playing'; hideAll(); running=true; last=performance.now(); requestAnimationFrame(loop);
-    audioInit();
-  }
-  function pause(){ if(state!=='playing') return; state='paused'; show('pause'); }
-  function resume(){ if(state!=='paused') return; state='playing'; hideAll(); }
-  function quit(){ running=false; state='menu'; show('menu'); }
-  function endGame(){
-    if(state!=='playing') return;
-    state='over'; sfx('hit');
-    SAVE.best = Math.max(SAVE.best|0, score|0); commit();
-    bestEl.textContent = SAVE.best|0; finalScoreEl.textContent = score|0; finalBestEl.textContent = SAVE.best|0;
-    overMsg.textContent = (score>=SAVE.best) ? "New record! Narwhal supremacy 🐋✨" : "Smooth swim! Try for a new best.";
-    show('over'); burstConfetti(score>=SAVE.best);
-  }
-
-  /* Input */
-  const input={tap:false};
-  canvas.addEventListener('pointerdown', ()=>{ input.tap=true; }, {passive:true});
-  addEventListener('keydown',(e)=>{ if(e.code==='Space'){ input.tap=true; e.preventDefault(); } if(e.code==='KeyP'){ if(state==='playing') pause(); else if(state==='paused') resume(); } });
-
-  /* Screens helpers */
-  function hideAll(){ screenMenu.classList.add('hidden'); screenOptions.classList.add('hidden'); screenPause.classList.add('hidden'); screenOver.classList.add('hidden'); }
-  function show(name){ hideAll(); if(name==='menu') screenMenu.classList.remove('hidden');
-    else if(name==='options') screenOptions.classList.remove('hidden'); else if(name==='pause') screenPause.classList.remove('hidden');
-    else if(name==='over') screenOver.classList.remove('hidden'); }
-
-  /* Buttons */
-  playBtn.onclick = ()=> start();
-  optsBtn.onclick = ()=>{ show('options'); rngMusic.value=SAVE.opts.music; rngSfx.value=SAVE.opts.sfx; };
-  backBtn.onclick = ()=> show('menu');
-  saveBtn.onclick = ()=>{ SAVE.opts.music=+rngMusic.value; SAVE.opts.sfx=+rngSfx.value; commit();
-    if(musicGain) musicGain.gain.value = SAVE.opts.muted?0:SAVE.opts.music;
-    if(sfxGain) sfxGain.gain.value = SAVE.opts.muted?0:SAVE.opts.sfx;
-    show('menu'); };
-  pauseBtn.onclick = ()=> pause();
-  resumeBtn.onclick = ()=> resume();
-  quitBtn.onclick = ()=> quit();
-  restartBtn.onclick = ()=> start();
-  overOptsBtn.onclick = ()=>{ show('options'); rngMusic.value=SAVE.opts.music; rngSfx.value=SAVE.opts.sfx; };
-  muteBtn.onclick = ()=>{ SAVE.opts.muted=!SAVE.opts.muted; muteBtn.textContent=SAVE.opts.muted?'🔇':'🔊';
-    if(musicGain) musicGain.gain.value=SAVE.opts.muted?0:SAVE.opts.music; if(sfxGain) sfxGain.gain.value=SAVE.opts.muted?0:SAVE.opts.sfx; commit(); };
-
-  document.addEventListener('visibilitychange', ()=>{ if(document.hidden && state==='playing') pause(); });
-
-  ['pointerdown','keydown'].forEach(ev=>{ addEventListener(ev, ()=>{ try{ if(AC&&AC.state==='suspended') AC.resume(); }catch(_){ } }, {once:true,passive:true}); });
-
-  /* Confetti */
-  const confettiCanvas = $('confetti'), cctx = confettiCanvas.getContext('2d');
-  function burstConfetti(active){
-    if(!active){ confettiCanvas.width=confettiCanvas.height=0; return; }
-    confettiCanvas.width = screenOver.querySelector('.card').clientWidth;
-    confettiCanvas.height = screenOver.querySelector('.card').clientHeight;
-    const rect = screenOver.querySelector('.card').getBoundingClientRect();
-    confettiCanvas.style.width = rect.width+'px'; confettiCanvas.style.height = rect.height+'px';
-    const pieces = [];
-    for(let i=0;i<110;i++){
-      pieces.push({x:rand(0,confettiCanvas.width), y:-10, vx:rand(-40,40), vy:rand(60,140), life:rand(0.9,1.8),
-        w:rand(4,8), h:rand(8,14), r:rand(0,Math.PI*2), vr:rand(-6,6), c:i%3===0?'#ffd166':(i%3===1?'#58fff1':'#ff6ea8')});
-    }
-    let t0=performance.now();
-    (function anim(){
-      const t=performance.now(); const dt=(t-t0)/1000; t0=t;
-      cctx.clearRect(0,0,confettiCanvas.width, confettiCanvas.height);
-      pieces.forEach(p=>{ p.vy+=200*dt; p.x+=p.vx*dt; p.y+=p.vy*dt; p.r+=p.vr*dt; p.life-=dt;
-        cctx.save(); cctx.translate(p.x,p.y); cctx.rotate(p.r); cctx.fillStyle=p.c; cctx.fillRect(-p.w*0.5,-p.h*0.5,p.w,p.h); cctx.restore(); });
-      for(let i=pieces.length-1;i>=0;i--){ if(pieces[i].life<=0 || pieces[i].y>confettiCanvas.height+30) pieces.splice(i,1); }
-      if(pieces.length>0 && !screenOver.classList.contains('hidden')) requestAnimationFrame(anim);
-    })();
-  }
-
-  /* Init */
-  bestEl.textContent = SAVE.best|0;
-  show('menu');
-
-})();
-</script>
-</body>
-</html>
+    // caustics bands
+    for(let i=0;i<3;i++){ const yy=h*0.55+Math.sin(t*0.6+i
