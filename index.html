@@ -2,343 +2,455 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
 <title>NARR DIVE — Flappy Narwhal</title>
 <style>
   :root{
-    --bg1:#0a1e4b; --bg2:#0e2f7a;
-    --aqua:#58fff1; --mint:#42ffd4; --mango:#ffd166; --violet:#9b8cff; --coral:#ff6ea8; --ice:#bde7ff;
-    --white:#f8fbff; --ink:#06162a;
+    --bg1:#0a1e4b; --bg2:#0e2f7a; --aqua:#58fff1; --mint:#42ffd4; --mango:#ffd166; --coral:#ff6ea8; --white:#f8fbff;
   }
-  html,body{ margin:0; padding:0; height:100%;
-    background:linear-gradient(180deg,var(--bg1),var(--bg2)); color:var(--white);
-    overflow:hidden; -webkit-tap-highlight-color:transparent;
-    font-family:"Baloo 2","Fredoka","Trebuchet MS","Arial Rounded MT Bold",system-ui,sans-serif;
-  }
-  #wrap{ position:relative; width:100vw; height:100vh; display:grid; place-items:center; }
-
-  /* Canvas under UI */
-  canvas{ position:absolute; inset:0; width:100vw; height:100vh; display:block; background:transparent; touch-action:none; z-index:1; }
-
+  html,body{margin:0;height:100%;background:linear-gradient(180deg,var(--bg1),var(--bg2));color:var(--white);
+    font-family:"Baloo 2","Fredoka","Trebuchet MS","Arial Rounded MT Bold",system-ui,sans-serif;overflow:hidden;-webkit-tap-highlight-color:transparent}
+  #wrap{position:relative;width:100vw;height:100vh}
+  canvas{position:absolute;inset:0;width:100%;height:100%;display:block;background:transparent;z-index:1;touch-action:none}
   /* HUD */
-  .hud{ position:absolute; inset:0; pointer-events:none; display:flex; flex-direction:column; justify-content:space-between; padding:12px; z-index:5; }
-  .hud .corner{ pointer-events:auto; }
-  .topbar{ display:flex; align-items:center; justify-content:space-between; text-shadow:0 2px 0 rgba(0,0,0,.35),0 0 14px rgba(0,0,0,.25); }
-  .score{ font-size:clamp(24px,6vw,54px); font-weight:900; letter-spacing:1px; color:var(--mango); filter:drop-shadow(0 3px 0 rgba(0,0,0,.35)); }
-  .best{ font-size:clamp(12px,2.4vw,18px); opacity:.9; }
-
-  .btn{
-    border:none; border-radius:16px; padding:12px 16px; font-weight:900; cursor:pointer; user-select:none;
-    background:linear-gradient(180deg,#1fd3b1,#0ab89a); box-shadow:0 6px 0 #0a836c, 0 14px 20px rgba(0,0,0,.25);
-    color:#062b2d; text-transform:uppercase; letter-spacing:.5px; transition:transform .06s ease, box-shadow .06s ease;
-  }
-  .btn:active{ transform:translateY(3px); box-shadow:0 3px 0 #0a836c, 0 8px 14px rgba(0,0,0,.25);}
-  .btn.alt{ background:linear-gradient(180deg,#7fa7ff,#6878ff); box-shadow:0 6px 0 #4653c7; color:#eef2ff;}
-  .btn.warn{ background:linear-gradient(180deg,#ff8aa1,#ff6a88); box-shadow:0 6px 0 #c74360; color:#441118;}
-
-  .pill{ background:rgba(255,255,255,.1); padding:6px 10px; border-radius:999px; font-weight:700; box-shadow:inset 0 0 0 2px rgba(255,255,255,.15); }
-  .card{ width:min(92vw,680px); background:linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,.06)); border-radius:28px; padding:24px;
-    box-shadow:0 18px 60px rgba(0,0,0,.45), inset 0 0 0 2px rgba(255,255,255,.12); }
-  .title{ font-size:clamp(28px,8vw,64px); line-height:1; margin:0 0 10px; color:var(--aqua); text-shadow:0 4px 0 #053144, 0 0 24px rgba(88,255,241,.5);}
-  .subtitle{ margin:0 0 14px; color:#cfefff; opacity:.95; font-weight:700; letter-spacing:.5px;}
-  .grid{ display:grid; gap:12px;} .grid.cols-2{ grid-template-columns:1fr 1fr; }
-  .row{ display:flex; gap:12px; align-items:center; justify-content:space-between; }
-  .label{ font-weight:800; text-transform:uppercase; opacity:.9;} .range{ width:100%; }
-  .select{ appearance:none; background:rgba(255,255,255,.12); border:none; color:var(--white); padding:10px 12px; border-radius:12px; font-weight:800; cursor:pointer;
-    box-shadow:inset 0 0 0 2px rgba(255,255,255,.15);}
-
-  /* Modal screens */
-  .screen{ position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  .hud{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:space-between;padding:12px;z-index:3;pointer-events:none}
+  .row{display:flex;justify-content:space-between;align-items:center}
+  .score{font-size:clamp(24px,6vw,56px);font-weight:900;color:var(--mango);text-shadow:0 2px 0 rgba(0,0,0,.35)}
+  .best{opacity:.9}
+  .btn{pointer-events:auto;border:none;border-radius:16px;padding:10px 14px;font-weight:900;cursor:pointer;
+       background:linear-gradient(180deg,#1fd3b1,#0ab89a);box-shadow:0 6px 0 #0a836c;color:#062b2d;text-transform:uppercase}
+  .btn.alt{background:linear-gradient(180deg,#7fa7ff,#6878ff);box-shadow:0 6px 0 #4653c7;color:#eef2ff}
+  .btn.warn{background:linear-gradient(180deg,#ff8aa1,#ff6a88);box-shadow:0 6px 0 #c74360;color:#441118}
+  .pill{pointer-events:none;background:rgba(255,255,255,.12);padding:6px 10px;border-radius:999px;font-weight:800}
+  /* Screens */
+  .screen{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:5;
     background:radial-gradient(120% 100% at 50% 0%, rgba(255,255,255,.08), rgba(0,0,0,.4) 60%, rgba(0,0,0,.55) 100%);
-    backdrop-filter:blur(4px); z-index:1000; pointer-events:auto;
-  }
-  .hidden{ display:none !important; }
-
-  @media(hover:none){ .btn{ padding:14px 16px; border-radius:18px;} }
+    backdrop-filter:blur(4px)}
+  .hidden{display:none!important}
+  .card{width:min(92vw,640px);background:linear-gradient(180deg,rgba(255,255,255,.12),rgba(255,255,255,.06));
+    border-radius:28px;padding:24px;box-shadow:0 18px 60px rgba(0,0,0,.45), inset 0 0 0 2px rgba(255,255,255,.12)}
+  .title{font-size:clamp(28px,8vw,60px);margin:0 0 6px;color:var(--aqua);text-shadow:0 4px 0 #053144}
+  .grid{display:grid;gap:12px}.cols-2{grid-template-columns:1fr 1fr}
+  .select,.range{appearance:none;background:rgba(255,255,255,.12);color:var(--white);border:none;border-radius:12px;padding:10px 12px;font-weight:800}
 </style>
 </head>
 <body>
-  <div id="wrap">
-    <canvas id="game" aria-label="NARR DIVE game canvas" role="img" tabindex="-1"></canvas>
+<div id="wrap">
+  <canvas id="game" aria-label="NARR DIVE game canvas"></canvas>
 
-    <div class="hud" aria-hidden="false">
-      <div class="topbar">
-        <div>
-          <div class="score" id="score">0</div>
-          <div class="best">Best: <span id="bestScore">0</span></div>
-        </div>
-        <div class="corner">
-          <button id="btnPause" class="btn alt" type="button" aria-label="Pause">Pause</button>
-          <button id="btnMute" class="btn" type="button" aria-label="Mute">🔊</button>
-        </div>
+  <!-- HUD -->
+  <div class="hud" id="hud">
+    <div class="row">
+      <div>
+        <div class="score" id="score">0</div>
+        <div class="best">Best: <span id="best">0</span></div>
       </div>
-      <div style="display:flex; justify-content:space-between; align-items:flex-end; padding:2px 4px;">
-        <div class="pill">Tap / Click / Space = Dash ↑</div>
-        <div class="pill">P = Pause</div>
+      <div style="display:flex;gap:8px">
+        <button id="pauseBtn" class="btn alt" type="button">Pause</button>
+        <button id="muteBtn" class="btn" type="button">🔊</button>
       </div>
     </div>
-
-    <!-- MENU -->
-    <section id="screenMenu" class="screen" role="dialog" aria-modal="true">
-      <div class="card">
-        <h1 class="title">$NARR — NARR DIVE</h1>
-        <p class="subtitle">Narwhal vs. Glaciers &amp; Mines — Swim the gaps, dodge the spikes, claim the ocean.</p>
-        <div class="grid cols-2">
-          <button id="playBtn" class="btn" type="button" style="font-size:1.25rem;">▶ Play</button>
-          <button id="optsBtn" class="btn alt" type="button">⚙ Options</button>
-        </div>
-        <div class="grid" style="margin-top:12px;">
-          <div class="row"><span class="label">Controls</span><span class="small">Space / Click / Tap</span></div>
-          <div class="row"><span class="label">Goal</span><span class="small">Pass obstacles. +1 per gate</span></div>
-          <div class="row"><span class="label">Tip</span><span class="small">Short, steady taps = stability</span></div>
-        </div>
-      </div>
-    </section>
-
-    <!-- OPTIONS -->
-    <section id="screenOptions" class="screen hidden" role="dialog" aria-modal="true">
-      <div class="card">
-        <h2 class="title" style="font-size:clamp(24px,6vw,44px);">Options</h2>
-        <div class="grid">
-          <div class="row"><span class="label">Difficulty</span>
-            <select id="difficulty" class="select">
-              <option value="easy">Easy</option><option value="normal" selected>Normal</option><option value="hard">Hard</option>
-            </select>
-          </div>
-          <div class="row"><span class="label">Music</span><input id="musicVol" type="range" min="0" max="1" step="0.01" class="range" /></div>
-          <div class="row"><span class="label">SFX</span><input id="sfxVol" type="range" min="0" max="1" step="0.01" class="range" /></div>
-          <div class="row"><span class="label">Particles</span>
-            <select id="particles" class="select">
-              <option value="high">High</option><option value="medium" selected>Medium</option><option value="low">Low</option><option value="off">Off</option>
-            </select>
-          </div>
-        </div>
-        <div class="grid cols-2" style="margin-top:12px;">
-          <button id="backBtn" class="btn alt" type="button">← Back</button>
-          <button id="saveOpts" class="btn" type="button">💾 Save</button>
-        </div>
-      </div>
-    </section>
-
-    <!-- PAUSE -->
-    <section id="screenPause" class="screen hidden" role="dialog" aria-live="polite">
-      <div class="card" style="text-align:center;">
-        <h2 class="title" style="font-size:clamp(24px,6vw,44px);">Paused</h2>
-        <p class="subtitle">Breathe… the ocean waits.</p>
-        <div class="grid cols-2">
-          <button id="resumeBtn" class="btn" type="button">▶ Resume</button>
-          <button id="quitBtn" class="btn warn" type="button">⏻ Quit</button>
-        </div>
-      </div>
-    </section>
-
-    <!-- OVER -->
-    <section id="screenOver" class="screen hidden" role="dialog" aria-live="polite">
-      <div class="card" style="text-align:center;">
-        <h2 class="title" style="font-size:clamp(24px,6vw,44px); color:var(--coral)">Game Over</h2>
-        <p class="subtitle">Score: <span id="finalScore">0</span> — Best: <span id="finalBest">0</span></p>
-        <div class="grid cols-2">
-          <button id="restartBtn" class="btn" type="button">↻ Restart</button>
-          <button id="overOptsBtn" class="btn alt" type="button">⚙ Options</button>
-        </div>
-      </div>
-    </section>
+    <div class="row" style="padding:2px 4px">
+      <div class="pill">Tap / Click / Space = Jump</div>
+      <div class="pill">P = Pause</div>
+    </div>
   </div>
+
+  <!-- MENU -->
+  <section id="menu" class="screen">
+    <div class="card">
+      <h1 class="title">$NARR — NARR DIVE</h1>
+      <p style="margin:0 0 10px;opacity:.95;font-weight:700">Narwhal vs. Glaciers & Mines — Swim through the gaps!</p>
+      <div class="grid cols-2" style="margin-bottom:10px">
+        <button id="playBtn" class="btn" type="button">▶ Play</button>
+        <button id="optsBtn" class="btn alt" type="button">⚙ Options</button>
+      </div>
+      <div class="grid">
+        <div class="row"><span style="font-weight:800">Controls</span><span>Space / Click / Tap</span></div>
+        <div class="row"><span style="font-weight:800">Goal</span><span>+1 per obstacle passed</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- OPTIONS -->
+  <section id="options" class="screen hidden">
+    <div class="card">
+      <h2 class="title" style="font-size:clamp(24px,6vw,40px)">Options</h2>
+      <div class="grid">
+        <div class="row"><span style="font-weight:800">Difficulty</span>
+          <select id="difficulty" class="select">
+            <option value="easy">Easy</option>
+            <option value="normal" selected>Normal</option>
+            <option value="hard">Hard</option>
+          </select>
+        </div>
+        <div class="row"><span style="font-weight:800">Music</span><input id="music" class="range" type="range" min="0" max="1" step="0.01"></div>
+        <div class="row"><span style="font-weight:800">SFX</span><input id="sfx" class="range" type="range" min="0" max="1" step="0.01"></div>
+      </div>
+      <div class="grid cols-2" style="margin-top:10px">
+        <button id="backBtn" class="btn alt" type="button">← Back</button>
+        <button id="saveBtn" class="btn" type="button">💾 Save</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- PAUSE -->
+  <section id="pause" class="screen hidden">
+    <div class="card" style="text-align:center">
+      <h2 class="title" style="font-size:clamp(24px,6vw,40px)">Paused</h2>
+      <p>Take a breath…</p>
+      <div class="grid cols-2">
+        <button id="resumeBtn" class="btn" type="button">▶ Resume</button>
+        <button id="quitBtn" class="btn warn" type="button">⏻ Quit</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- GAME OVER -->
+  <section id="over" class="screen hidden">
+    <div class="card" style="text-align:center">
+      <h2 class="title" style="font-size:clamp(24px,6vw,40px);color:var(--coral)">Game Over</h2>
+      <p>Score: <span id="finalScore">0</span> — Best: <span id="finalBest">0</span></p>
+      <div class="grid cols-2">
+        <button id="restartBtn" class="btn" type="button">↻ Restart</button>
+        <button id="overOptsBtn" class="btn alt" type="button">⚙ Options</button>
+      </div>
+    </div>
+  </section>
+</div>
 
 <script>
 (() => {
   'use strict';
 
-  /* ---------------- Utils & Save ---------------- */
-  const clamp=(v,min,max)=>Math.max(min,Math.min(max,v));
-  const rand=(a,b)=>Math.random()*(b-a)+a;
-  const lerp=(a,b,t)=>a+(b-a)*t;
-  const now=()=>performance.now();
-  const deepClone=(o)=>JSON.parse(JSON.stringify(o));
+  /* ---------- Shortcuts ---------- */
+  const $ = id => document.getElementById(id);
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const rand = (a, b) => Math.random() * (b - a) + a;
 
-  const STORAGE='NARR_DIVE_SAVE';
-  const DEFAULT={best:0,opts:{difficulty:'normal',music:0.6,sfx:0.9,particles:'medium',muted:false}};
-  let SAVE=load();
-  function load(){ try{ const r=localStorage.getItem(STORAGE); if(!r) return deepClone(DEFAULT);
-    const p=JSON.parse(r); return {...deepClone(DEFAULT),...p,opts:{...DEFAULT.opts,...(p.opts||{})}}; }catch(e){ return deepClone(DEFAULT);} }
-  function commit(){ try{ localStorage.setItem(STORAGE, JSON.stringify(SAVE)); }catch(e){} }
+  /* ---------- Save ---------- */
+  const STORAGE = 'NARR_DIVE_SAVE_V1';
+  const DEFAULT = { best:0, opts:{ difficulty:'normal', music:0.6, sfx:0.9, muted:false } };
+  let SAVE = (()=>{ try { const r = localStorage.getItem(STORAGE); if(!r) return JSON.parse(JSON.stringify(DEFAULT));
+                     const p = JSON.parse(r); return { ...DEFAULT, ...p, opts:{...DEFAULT.opts, ...(p.opts||{})} }; }
+                   catch(_) { return JSON.parse(JSON.stringify(DEFAULT)); } })();
+  const commit = ()=>{ try{ localStorage.setItem(STORAGE, JSON.stringify(SAVE)); }catch(_){} };
 
-  /* ---------------- Canvas ---------------- */
-  const canvas=document.getElementById('game');
-  const ctx=canvas.getContext('2d',{alpha:true,desynchronized:true});
-  let DPR=Math.max(1,Math.min(2,window.devicePixelRatio||1));
-  const LOGICAL={w:480,h:800};
-  let view={w:innerWidth,h:innerHeight};
-  function resize(){ view.w=innerWidth; view.h=innerHeight; DPR=Math.max(1,Math.min(2,devicePixelRatio||1));
-    canvas.width=Math.round(view.w*DPR); canvas.height=Math.round(view.h*DPR); ctx.setTransform(DPR,0,0,DPR,0,0); }
-  addEventListener('resize',resize,{passive:true}); resize();
+  /* ---------- Canvas / Scale ---------- */
+  const canvas = $('game');
+  const ctx = canvas.getContext('2d', { alpha:true });
+  let DPR = Math.max(1, Math.min(2, devicePixelRatio||1));
+  function resize(){
+    const w = innerWidth, h = innerHeight;
+    canvas.width = Math.round(w * DPR);
+    canvas.height = Math.round(h * DPR);
+    ctx.setTransform(DPR,0,0,DPR,0,0);
+    view.w = w; view.h = h;
+  }
+  const view = { w: innerWidth, h: innerHeight };
+  addEventListener('resize', resize, { passive:true }); resize();
 
-  /* ---------------- Audio (optional) ---------------- */
-  let AC=null;
-  function ensureAC(){ try{ if(AC) return AC; const C=window.AudioContext||window.webkitAudioContext; if(!C) return null;
-    AC=new C(); if(AC.state==='suspended' && AC.resume) AC.resume(); return AC; }catch(_){ return null; } }
-  const AudioSys={
-    master:null,music:null,sfx:null,seqInt:null,bpm:102,
-    init(){ const ac=ensureAC(); if(!ac) return;
-      this.master=ac.createGain(); this.music=ac.createGain(); this.sfx=ac.createGain();
-      this.music.gain.value=SAVE.opts.muted?0:SAVE.opts.music; this.sfx.gain.value=SAVE.opts.muted?0:SAVE.opts.sfx;
-      this.music.connect(this.master); this.sfx.connect(this.master); this.master.connect(ac.destination); },
-    setMusic(v){ if(this.music) this.music.gain.value=SAVE.opts.muted?0:v; },
-    setSfx(v){ if(this.sfx) this.sfx.gain.value=SAVE.opts.muted?0:v; },
-    setMuted(m){ if(!this.music||!this.sfx) return; this.music.gain.value=m?0:SAVE.opts.music; this.sfx.gain.value=m?0:SAVE.opts.sfx; },
-    play(kind){ const ac=ensureAC(); if(!ac||!this.sfx) return;
-      const t=ac.currentTime; if(kind==='flap'){ const o=ac.createOscillator(),g=ac.createGain();
-        o.type='triangle'; o.frequency.setValueAtTime(620,t); o.frequency.exponentialRampToValueAtTime(420,t+0.08);
-        g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.2,t+0.01); g.gain.exponentialRampToValueAtTime(0.0001,t+0.12);
-        o.connect(g).connect(this.sfx); o.start(t); o.stop(t+0.14);
-      } else if(kind==='score'){ const o=ac.createOscillator(),g=ac.createGain();
-        o.type='square'; o.frequency.setValueAtTime(880,t); o.frequency.exponentialRampToValueAtTime(1320,t+0.06);
-        g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.25,t+0.02); g.gain.exponentialRampToValueAtTime(0.0001,t+0.12);
-        o.connect(g).connect(this.sfx); o.start(t); o.stop(t+0.13);
-      } else if(kind==='hit'){ const b=ac.createBuffer(1,ac.sampleRate*0.25,ac.sampleRate),d=b.getChannelData(0);
-        for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*Math.pow(1-i/d.length,2);
-        const n=ac.createBufferSource(),g=ac.createGain(); g.gain.setValueAtTime(0.25,t); g.gain.exponentialRampToValueAtTime(0.0001,t+0.25);
-        n.buffer=b; n.connect(g).connect(this.sfx); n.start(t);
-      } else if(kind==='btn'){ const o=ac.createOscillator(),g=ac.createGain();
-        o.type='sine'; o.frequency.setValueAtTime(660,t); o.frequency.exponentialRampToValueAtTime(520,t+0.06);
-        g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.22,t+0.02); g.gain.exponentialRampToValueAtTime(0.0001,t+0.10);
-        o.connect(g).connect(this.sfx); o.start(t); o.stop(t+0.11); }
-    },
-    musicOn(){ const ac=ensureAC(); if(!ac||this.seqInt||!this.music) return;
-      const seq=[440,440,523,440,659,587,523,392, 440,440,523,440,698,659,587,523]; const step=60/this.bpm; let i=0;
-      this.seqInt=setInterval(()=>{ const o=ac.createOscillator(),g=ac.createGain(); o.type='triangle'; o.frequency.value=seq[i%seq.length];
-        const t=ac.currentTime; g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.15,t+0.02); g.gain.exponentialRampToValueAtTime(0.0001,t+step*0.9);
-        o.connect(g).connect(this.music); o.start(t); o.stop(t+step); i++; }, step*1000);
-    },
-    musicOff(){ if(this.seqInt){ clearInterval(this.seqInt); this.seqInt=null; } }
-  };
+  /* ---------- Audio (optional, never blocks start) ---------- */
+  let AC=null, musicGain=null, sfxGain=null;
+  function audioInit(){
+    try{
+      const C = window.AudioContext || window.webkitAudioContext;
+      if(!C) return;
+      AC = AC || new C();
+      const master = AC.createGain(); musicGain = AC.createGain(); sfxGain = AC.createGain();
+      musicGain.gain.value = SAVE.opts.muted ? 0 : SAVE.opts.music;
+      sfxGain.gain.value = SAVE.opts.muted ? 0 : SAVE.opts.sfx;
+      musicGain.connect(master); sfxGain.connect(master); master.connect(AC.destination);
+    }catch(_){}
+  }
+  function sfx(type){
+    if(!AC || !sfxGain) return;
+    const t = AC.currentTime;
+    if(type==='flap'){
+      const o=AC.createOscillator(), g=AC.createGain(); o.type='triangle';
+      o.frequency.setValueAtTime(620,t); o.frequency.exponentialRampToValueAtTime(420,t+0.08);
+      g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.22,t+0.02); g.gain.exponentialRampToValueAtTime(0.0001,t+0.12);
+      o.connect(g).connect(sfxGain); o.start(t); o.stop(t+0.14);
+    } else if(type==='score'){
+      const o=AC.createOscillator(), g=AC.createGain(); o.type='square';
+      o.frequency.setValueAtTime(880,t); o.frequency.exponentialRampToValueAtTime(1320,t+0.06);
+      g.gain.setValueAtTime(0.0001,t); g.gain.exponentialRampToValueAtTime(0.25,t+0.02); g.gain.exponentialRampToValueAtTime(0.0001,t+0.12);
+      o.connect(g).connect(sfxGain); o.start(t); o.stop(t+0.13);
+    } else if(type==='hit'){
+      const b=AC.createBuffer(1, AC.sampleRate*0.25, AC.sampleRate), d=b.getChannelData(0);
+      for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*(1-i/d.length);
+      const n=AC.createBufferSource(), g=AC.createGain(); g.gain.setValueAtTime(0.25,t); g.gain.exponentialRampToValueAtTime(0.0001,t+0.25);
+      n.buffer=b; n.connect(g).connect(sfxGain); n.start(t);
+    }
+  }
 
-  /* ---------------- Screens & UI ---------------- */
-  const screenMenu=document.getElementById('screenMenu');
-  const screenOptions=document.getElementById('screenOptions');
-  const screenPause=document.getElementById('screenPause');
-  const screenOver=document.getElementById('screenOver');
+  /* ---------- UI refs ---------- */
+  const screenMenu = $('menu');
+  const screenOptions = $('options');
+  const screenPause = $('pause');
+  const screenOver = $('over');
+  const playBtn = $('playBtn'), optsBtn = $('optsBtn'), backBtn = $('backBtn'), saveBtn = $('saveBtn');
+  const pauseBtn = $('pauseBtn'), muteBtn = $('muteBtn'), resumeBtn = $('resumeBtn'), quitBtn = $('quitBtn');
+  const restartBtn = $('restartBtn'), overOptsBtn = $('overOptsBtn');
+  const scoreEl = $('score'), bestEl = $('best'), finalScoreEl = $('finalScore'), finalBestEl = $('finalBest');
+  const selDiff = $('difficulty'), rngMusic = $('music'), rngSfx = $('sfx');
+  bestEl.textContent = SAVE.best|0;
 
-  const btnPlay=document.getElementById('playBtn');
-  const btnOpts=document.getElementById('optsBtn');
-  const btnBack=document.getElementById('backBtn');
-  const btnSave=document.getElementById('saveOpts');
-  const btnPause=document.getElementById('btnPause');
-  const btnMute=document.getElementById('btnMute');
-  const btnResume=document.getElementById('resumeBtn');
-  const btnQuit=document.getElementById('quitBtn');
-  const btnRestart=document.getElementById('restartBtn');
-  const btnOverOpts=document.getElementById('overOptsBtn');
+  /* ---------- Game state ---------- */
+  const WORLD = { speed: 170, gravity: 1800, flap: 480, gap: 210, spawnEvery: 1.45 };
+  function applyDifficulty(){
+    const d = SAVE.opts.difficulty;
+    if(d==='easy'){ WORLD.speed=150; WORLD.gap=240; WORLD.spawnEvery=1.6; }
+    else if(d==='hard'){ WORLD.speed=195; WORLD.gap=180; WORLD.spawnEvery=1.25; }
+    else { WORLD.speed=170; WORLD.gap=210; WORLD.spawnEvery=1.45; }
+  }
+  applyDifficulty();
 
-  const selDiff=document.getElementById('difficulty');
-  const rngMusic=document.getElementById('musicVol');
-  const rngSfx=document.getElementById('sfxVol');
-  const selParticles=document.getElementById('particles');
+  const player = { x: 0, y: 0, vy: 0, r: 22, alive: true, rot: 0 };
+  const obstacles = []; // {x,w,topH,bottomY,scored}
+  let spawnTimer = 0, score = 0, running = false, state = 'menu', last = performance.now();
 
-  const scoreEl=document.getElementById('score');
-  const bestEl=document.getElementById('bestScore');
-  const finalScoreEl=document.getElementById('finalScore');
-  const finalBestEl=document.getElementById('finalBest');
-  bestEl.textContent=SAVE.best|0;
+  function resetGame(){
+    player.x = view.w * 0.28;
+    player.y = view.h * 0.5;
+    player.vy = 0; player.alive = true; player.rot = 0;
+    obstacles.length = 0; score = 0; spawnTimer = 0;
+    scoreEl.textContent = '0';
+  }
 
-  function show(name){
+  function spawnObstacle(){
+    const w = Math.max(70, Math.min(120, view.w*0.18));
+    const padTop = 40, padBottom = 80;
+    const gap = WORLD.gap * (view.h/800); // scale gap to viewport height
+    const maxY = view.h - padBottom - gap;
+    const gapTop = rand(padTop, maxY);
+    const x = view.w + w;
+    obstacles.push({ x, w, topH: gapTop, bottomY: gapTop + gap, scored:false });
+  }
+
+  function circleRectCollide(cx, cy, cr, rx, ry, rw, rh){
+    const nx = clamp(cx, rx, rx+rw), ny = clamp(cy, ry, ry+rh);
+    const dx = cx - nx, dy = cy - ny;
+    return (dx*dx + dy*dy) <= cr*cr;
+  }
+
+  /* ---------- Rendering ---------- */
+  function drawBackground(t){
+    const w=view.w, h=view.h;
+    // water gradient bands
+    for(let i=0;i<3;i++){
+      const yy = h*0.55 + Math.sin(t*0.6 + i)*12;
+      ctx.fillStyle = 'rgba(255,255,255,0.05)';
+      ctx.fillRect(0, yy, w, 6);
+    }
+    // far ice silhouettes
+    ctx.globalAlpha = 0.25;
+    ctx.fillStyle = '#bde7ff';
+    const yBase = h*0.18;
+    for(let i=0;i<4;i++){
+      const ox = ((-t*20) + i*(w/3)) % (w+200) - 200;
+      ctx.beginPath();
+      ctx.moveTo(ox, yBase);
+      ctx.lineTo(ox+80, yBase-18);
+      ctx.lineTo(ox+140, yBase);
+      ctx.lineTo(ox+200, yBase-12);
+      ctx.lineTo(ox+260, yBase);
+      ctx.lineTo(ox+260, yBase+26);
+      ctx.lineTo(ox, yBase+26);
+      ctx.closePath(); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  function drawNarwhal(p){
+    const r = Math.max(16, view.w*0.045);
+    p.r = r;
+    ctx.save();
+    ctx.translate(p.x, p.y);
+    ctx.rotate(p.rot);
+    // body
+    const bw=r*2.1, bh=r*1.3;
+    const g=ctx.createLinearGradient(-bw*0.5,-bh*0.2,bw*0.7,bh*0.5);
+    g.addColorStop(0,'#9be9ff'); g.addColorStop(0.5,'#6dd6ff'); g.addColorStop(1,'#3fb6ff');
+    ctx.fillStyle=g;
+    roundRect(-bw*0.5,-bh*0.5,bw,bh,bh*0.5);
+    // belly
+    ctx.fillStyle='rgba(255,255,255,0.75)';
+    roundRect(-bw*0.28,-bh*0.12,bw*0.7,bh*0.6,bh*0.3);
+    // eye
+    ctx.fillStyle='#072034'; ctx.beginPath(); ctx.arc(bw*0.15,-bh*0.08,r*0.18,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='white'; ctx.beginPath(); ctx.arc(bw*0.18,-bh*0.12,r*0.07,0,Math.PI*2); ctx.fill();
+    // tusk
+    ctx.save(); ctx.translate(bw*0.58, -r*0.05); ctx.rotate(-0.07);
+    ctx.fillStyle='#f7f1d9'; ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(r*1.4,-r*0.15); ctx.lineTo(r*1.4,r*0.15); ctx.closePath(); ctx.fill();
+    ctx.restore();
+    ctx.restore();
+  }
+
+  function roundRect(x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y);
+    ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); ctx.fill(); }
+
+  function drawObstacles(){
+    ctx.fillStyle = '#b8e8ff';
+    ctx.strokeStyle = '#e9f7ff';
+    ctx.lineWidth = 2;
+    for(const o of obstacles){
+      // top glacier
+      ctx.beginPath();
+      ctx.rect(o.x, 0, o.w, o.topH);
+      ctx.fill(); ctx.stroke();
+      // bottom glacier
+      ctx.beginPath();
+      ctx.rect(o.x, o.bottomY, o.w, view.h - o.bottomY);
+      ctx.fill(); ctx.stroke();
+    }
+  }
+
+  /* ---------- Loop ---------- */
+  function update(dt, t){
+    // spawn
+    spawnTimer -= dt;
+    if (spawnTimer <= 0){ spawnObstacle(); spawnTimer = WORLD.spawnEvery; }
+
+    // flap
+    if (input.tap && state==='playing' && player.alive){
+      player.vy = -WORLD.flap * (view.h/800);
+      sfx('flap');
+    }
+    input.tap = false;
+
+    // physics
+    player.vy += WORLD.gravity * dt * (view.h/800);
+    player.vy = clamp(player.vy, -10000, 10000);
+    player.y += player.vy * dt;
+    player.rot = (player.vy/1000)*0.5;
+
+    // move obstacles
+    for(const o of obstacles) o.x -= WORLD.speed * dt * (view.w/480);
+    while(obstacles.length && obstacles[0].x + obstacles[0].w < -40) obstacles.shift();
+
+    // collisions + scoring
+    if (player.y - player.r < 0 || player.y + player.r > view.h) endGame();
+    for(const o of obstacles){
+      if(circleRectCollide(player.x, player.y, player.r, o.x, 0, o.w, o.topH) ||
+         circleRectCollide(player.x, player.y, player.r, o.x, o.bottomY, o.w, view.h - o.bottomY)){
+        endGame(); break;
+      }
+      if(!o.scored && o.x + o.w < player.x - player.r){
+        o.scored = true; score++; scoreEl.textContent = String(score); sfx('score');
+      }
+    }
+  }
+
+  function render(t){
+    ctx.clearRect(0,0,view.w,view.h);
+    drawBackground(t);
+    drawObstacles();
+    drawNarwhal(player);
+  }
+
+  function loop(){
+    if(!running) return;
+    const now = performance.now();
+    let dt = (now - last)/1000; last = now;
+    dt = Math.min(0.033, dt);
+    if(state==='playing') update(dt, now*0.001);
+    render(now*0.001);
+    requestAnimationFrame(loop);
+  }
+
+  /* ---------- Flow ---------- */
+  function start(){
+    applyDifficulty();
+    resetGame();
+    state = 'playing';
+    hideAll();
+    running = true;
+    last = performance.now();
+    requestAnimationFrame(loop);
+    // init audio after user gesture
+    audioInit();
+  }
+  function pause(){
+    if(state!=='playing') return;
+    state='paused'; show('pause');
+  }
+  function resume(){
+    if(state!=='paused') return;
+    state='playing'; hideAll(); // back to play
+  }
+  function quitToMenu(){
+    running = false; state='menu'; show('menu');
+  }
+  function endGame(){
+    if(state!=='playing') return;
+    state='over';
+    sfx('hit');
+    SAVE.best = Math.max(SAVE.best|0, score|0); commit();
+    bestEl.textContent = SAVE.best|0;
+    finalScoreEl.textContent = score|0;
+    finalBestEl.textContent = SAVE.best|0;
+    show('over');
+  }
+
+  /* ---------- Input only on CANVAS ---------- */
+  const input = { tap:false };
+  canvas.addEventListener('pointerdown', () => { input.tap = true; }, { passive:true });
+  addEventListener('keydown', (e)=>{
+    if(e.code==='Space'){ input.tap=true; e.preventDefault(); }
+    if(e.code==='KeyP'){ if(state==='playing') pause(); else if(state==='paused') resume(); }
+  });
+
+  /* ---------- Screens helpers ---------- */
+  function hideAll(){
     screenMenu.classList.add('hidden');
     screenOptions.classList.add('hidden');
     screenPause.classList.add('hidden');
     screenOver.classList.add('hidden');
+  }
+  function show(name){
+    hideAll();
     if(name==='menu') screenMenu.classList.remove('hidden');
     else if(name==='options') screenOptions.classList.remove('hidden');
     else if(name==='pause') screenPause.classList.remove('hidden');
     else if(name==='over') screenOver.classList.remove('hidden');
   }
-  show('menu');
 
-  /* ---------------- Input (safe) ---------------- */
-  const Input={tap:false,pressed:false};
+  /* ---------- Buttons (no preventDefault anywhere) ---------- */
+  playBtn.onclick = () => { start(); };
+  optsBtn.onclick = () => { show('options'); selDiff.value = SAVE.opts.difficulty; rngMusic.value = SAVE.opts.music; rngSfx.value = SAVE.opts.sfx; };
+  backBtn.onclick = () => { show('menu'); };
+  saveBtn.onclick = () => {
+    SAVE.opts.difficulty = selDiff.value;
+    SAVE.opts.music = +rngMusic.value;
+    SAVE.opts.sfx = +rngSfx.value;
+    commit();
+    if(musicGain) musicGain.gain.value = SAVE.opts.muted?0:SAVE.opts.music;
+    if(sfxGain) sfxGain.gain.value = SAVE.opts.muted?0:SAVE.opts.sfx;
+    show('menu');
+  };
+  pauseBtn.onclick = () => { if(state==='playing') pause(); };
+  resumeBtn.onclick = () => { resume(); };
+  quitBtn.onclick = () => { quitToMenu(); };
+  restartBtn.onclick = () => { hideAll(); running = true; start(); };
+  overOptsBtn.onclick = () => { show('options'); selDiff.value = SAVE.opts.difficulty; rngMusic.value = SAVE.opts.music; rngSfx.value = SAVE.opts.sfx; };
+  muteBtn.onclick = () => {
+    SAVE.opts.muted = !SAVE.opts.muted;
+    muteBtn.textContent = SAVE.opts.muted ? '🔇' : '🔊';
+    if(musicGain) musicGain.gain.value = SAVE.opts.muted ? 0 : SAVE.opts.music;
+    if(sfxGain) sfxGain.gain.value = SAVE.opts.muted ? 0 : SAVE.opts.sfx;
+    commit();
+  };
 
-  function safeClosest(node, selector){
-    let el = node;
-    while(el && el.nodeType!==1){ el = el.parentNode; }
-    while(el){
-      if(el.matches && el.matches(selector)) return el;
-      el = el.parentElement;
-    }
-    return null;
-  }
-  function isUI(target){
-    if(!target) return false;
-    return !!(safeClosest(target,'.screen') || safeClosest(target,'.btn') || safeClosest(target,'button') || safeClosest(target,'select') || safeClosest(target,'input'));
-  }
-  function onPress(e){ if(isUI(e.target)) return; e.preventDefault(); Input.tap=true; Input.pressed=true; }
-  function onRelease(e){ if(isUI(e.target)) return; e.preventDefault(); Input.pressed=false; }
+  /* ---------- Auto-pause on tab hide ---------- */
+  document.addEventListener('visibilitychange', ()=>{ if(document.hidden && state==='playing') pause(); });
 
-  addEventListener('mousedown',onPress);
-  addEventListener('mouseup',onRelease);
-  addEventListener('touchstart',onPress,{passive:false});
-  addEventListener('touchend',onRelease);
+  /* ---------- First gesture unlock (non-bloquant) ---------- */
+  ['pointerdown','keydown'].forEach(ev=>{
+    addEventListener(ev, ()=>{ try{ if(AC && AC.state==='suspended') AC.resume(); }catch(_){ } }, { once:true, passive:true });
+  });
 
-  addEventListener('keydown',(e)=>{ if(e.code==='Space'){ Input.tap=true; Input.pressed=true; e.preventDefault(); } if(e.code==='KeyP'){ togglePause(); } });
-  addEventListener('keyup',(e)=>{ if(e.code==='Space'){ Input.pressed=false; e.preventDefault(); } });
-
-  /* ---------------- World ---------------- */
-  const WORLD={w:LOGICAL.w,h:LOGICAL.h,speed:170,gravity:1700,flap:470,gap:210,spawnEvery:1.45,mineChance:0.5};
-  function applyDifficulty(){
-    const d=SAVE.opts.difficulty;
-    if(d==='easy'){ WORLD.speed=150; WORLD.gap=240; WORLD.spawnEvery=1.6; WORLD.mineChance=0.35; }
-    else if(d==='hard'){ WORLD.speed=195; WORLD.gap=180; WORLD.spawnEvery=1.25; WORLD.mineChance=0.65; }
-    else { WORLD.speed=170; WORLD.gap=210; WORLD.spawnEvery=1.45; WORLD.mineChance=0.5; }
-  }
-  applyDifficulty();
-
-  const player={x:WORLD.w*0.28,y:WORLD.h*0.5,vy:0,r:22,alive:true,rot:0};
-  const obstacles=[]; let spawnTimer=0, score=0, lastT=now(), running=false; let particles=[];
-  const particleBudget=()=>({high:220,medium:140,low:80,off:0}[SAVE.opts.particles||'medium']);
-
-  function resetGame(){ player.x=WORLD.w*0.28; player.y=WORLD.h*0.5; player.vy=0; player.alive=true; player.rot=0;
-    obstacles.length=0; particles.length=0; score=0; spawnTimer=0; scoreEl.textContent='0'; }
-
-  function spawnObstacle(){
-    const w=86, padTop=40, padBottom=80, maxY=WORLD.h-padBottom-WORLD.gap;
-    const gapY=rand(padTop,maxY), x=WORLD.w+30, topH=gapY, bottomY=gapY+WORLD.gap;
-    const obj={x,w,gapY,passed:false,topH,bottomY,mine:null,mine2:null};
-    if(Math.random()<WORLD.mineChance){
-      const rr=rand(16,24);
-      obj.mine={x:x+w*0.5,y:gapY+WORLD.gap*0.5+rand(-WORLD.gap*0.25,WORLD.gap*0.25),r:rr,phase:Math.random()*Math.PI*2,amp:rand(8,18),speed:rand(0.8,1.6)};
-      if(Math.random()<0.35){ obj.mine2={x:x+w+rand(20,48),y:gapY+WORLD.gap*0.5+rand(-WORLD.gap*0.25,WORLD.gap*0.25),r:rand(12,18),phase:Math.random()*Math.PI*2,amp:rand(6,14),speed:rand(1.2,1.9)}; }
-    }
-    obstacles.push(obj);
-  }
-
-  /* ---------------- Rendering ---------------- */
-  function w2x(x){ return x/WORLD.w*view.w; }
-  function w2y(y){ return y/WORLD.h*view.h; }
-
-  function bg(dt,t){
-    const w=view.w,h=view.h; ctx.save();
-    for(let i=0;i<6;i++){ const x=((t*10+i*240)%(w+240))-240;
-      const g=ctx.createLinearGradient(x,0,x+240,h); g.addColorStop(0,'rgba(255,255,255,0.03)'); g.addColorStop(1,'rgba(255,255,255,0)');
-      ctx.fillStyle=g; ctx.fillRect(x,0,240,h); }
-    ctx.globalAlpha=.25; ctx.fillStyle='#bde7ff'; const yBase=h*0.18;
-    for(let i=0;i<4;i++){ const ox=((-t*20)+i*(w/3))%(w+200)-200; ctx.beginPath();
-      ctx.moveTo(ox,yBase); ctx.lineTo(ox+80,yBase-18); ctx.lineTo(ox+140,yBase); ctx.lineTo(ox+200,yBase-12); ctx.lineTo(ox+260,yBase);
-      ctx.lineTo(ox+260,yBase+26); ctx.lineTo(ox,yBase+26); ctx.closePath(); ctx.fill(); }
-    ctx.globalAlpha=1;
-    for(let i=0;i<3;i++){ const yy=h*0.55+Math.sin(t*0.6+i)*12; ctx.fillStyle='rgba(255,255,255,0.05)'; ctx.fillRect(0,yy,w,6); }
-    ctx.restore();
-  }
-
-  function rrect(x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); ctx.fill(); }
-
-  function drawNarwhal(p){
-    const x=w2x(p.x), y=w2y(p.y), r=(p.r/WORLD.w)*view.w*1.5; ctx.save(); ctx.translate(x,y); ctx.rotate(p.rot);
-    const bodyW=r*2.1, bodyH=r*1.3, g=ctx.createLinearGradient(-bodyW*0.5,-bodyH*0.2,bodyW*0.7,bodyH*0.5);
-    g.addColorStop(0,'#9be9ff'); g.addColorStop(0.5,'#6dd6ff'); g.addColorStop(1,'#3fb6ff');
-    ctx.fillStyle=g; rrect(-bodyW*0.5,-bodyH*0.5,bodyW,bodyH,bodyH*0.5);
-    ctx.fillStyle='rgba(255,255,255,0.75)'; rrect(-bodyW*0.28,-bodyH*0.12,bodyW*0.7,bodyH*0.6,bodyH*0.3);
-    ctx.fillStyle='#072034'; ctx.beginPath(); ctx.arc(bodyW*0.15,-bodyH*0.08,r*0.18,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle='white'; ctx.beginPath(); ctx.arc(bodyW*0.18,-bodyH*0.12,r*0.07,0,Math.PI*2); ctx.fill();
-    ctx.save(); ctx.translate(-bodyW*0.56,0); const flap=Math.sin(Date.now()*0.008)*r*0.18; ctx.rotate(flap*0.02);
-    ctx.fillStyle='#58d8ff'; ctx.beginPath(); ctx.moveTo(0,0);
-    ctx.quadraticCurveTo(-r*0.6,-r*0.6,-r*1.0,-r*0.2); ctx.quadraticCurveTo(-r*0.3,0,0,0);
-    ctx.moveTo(0,0); ctx.quadraticCurveTo(-r*0.6,r*0.6,-r*1.0,r*0.2); ctx.quadraticCurveTo(-r*0.3,0,0,0); ctx.fill(); ctx.restore();
-    ctx.fillStyle='#58d8ff'; ctx.beginPath(); ctx.elli
+})();
+</script>
+</body>
+</html>
