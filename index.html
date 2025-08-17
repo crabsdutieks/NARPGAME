@@ -21,7 +21,7 @@ html,body{
 canvas{display:block;border-radius:18px;box-shadow:0 18px 50px rgba(0,0,0,.5);background:transparent;z-index:1}
 
 /* HUD */
-.hud{position:fixed;top:10px;left:10px;right:64px;display:flex;gap:10px;justify-content:flex-start;
+.hud{position:fixed;top:10px;left:10px;right:84px;display:flex;gap:10px;justify-content:flex-start;
   font-weight:800;text-shadow:0 2px 4px #000;pointer-events:none;z-index:15}
 .badge{background:rgba(0,0,0,.28);padding:6px 12px;border-radius:14px}
 
@@ -91,17 +91,12 @@ canvas{display:block;border-radius:18px;box-shadow:0 18px 50px rgba(0,0,0,.5);ba
 <script>
 /* =================== CONFIG =================== */
 var CFG={
-  gravity: 900,
-  flapVel: -330,
-  baseSpeed: 240,
-  maxDt: 1/30,
-  spawnGap: 1.05,
-  startSafeX: 0.42,
-  ramp:{ speed: 0.08, gapMin: 150, gapMax: 190, gapTighten: 0.12 },
-  graceMs: 700
+  gravity: 900, flapVel: -330, baseSpeed: 240, maxDt: 1/30,
+  spawnGap: 1.05, startSafeX: 0.42, graceMs: 700,
+  ramp:{ speed: 0.08, gapMin: 150, gapMax: 190, gapTighten: 0.12 }
 };
 
-/* =================== Canvas scaling =================== */
+/* =================== Canvas =================== */
 var cv=document.getElementById('game'), ctx=cv.getContext('2d');
 var VIEW={w:900,h:600};
 function fitCanvas(){
@@ -116,7 +111,6 @@ function fitCanvas(){
 }
 function debounce(fn,ms){var t;return function(){clearTimeout(t);var a=arguments;t=setTimeout(function(){fn.apply(null,a);},ms);};}
 window.addEventListener('resize',debounce(fitCanvas,120));
-fitCanvas();
 
 /* =================== HUD & Overlay =================== */
 function $(id){return document.getElementById(id);}
@@ -144,13 +138,13 @@ function circleHit(x1,y1,r1,x2,y2,r2){var dx=x1-x2,dy=y1-y2;return (dx*dx+dy*dy)
 function circleRectHit(cx,cy,cr, rx,ry,rw,rh){var nx=Math.max(rx,Math.min(cx,rx+rw)), ny=Math.max(ry,Math.min(cy,ry+rh)); var dx=cx-nx,dy=cy-ny; return (dx*dx+dy*dy)<=cr*cr;}
 function cssVar(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim();}
 
-/* =================== Audio (facultatif) =================== */
+/* =================== Audio (musique avant Start) =================== */
 var AudioSys={
   ctx:null,master:null,music:null,sfx:null,started:false,muted:(localStorage.getItem('narrMuted')==='1'),
   init:function(){
     if(this.started) return;
     try{
-      var AC = window.AudioContext || window.webkitAudioContext;
+      var AC=window.AudioContext||window.webkitAudioContext;
       this.ctx = AC ? new AC() : null;
       if(!this.ctx){ this.started=false; return; }
       this.master=this.ctx.createGain(); this.master.connect(this.ctx.destination);
@@ -159,7 +153,8 @@ var AudioSys={
       this.started=true; if(this.muted) this.toggle(true); this.song();
     }catch(e){ this.started=false; console.warn('Audio disabled:', e); }
   },
-  resume:function(){ if(this.ctx && this.ctx.state==='suspended'){ return this.ctx.resume(); } return Promise.resolve(); },
+  resume:function(){ try{ if(this.ctx && this.ctx.state==='suspended') return this.ctx.resume(); }catch(e){} return Promise.resolve(); },
+  startBackground:function(){ this.init(); this.resume(); },
   toggle:function(force){
     if(typeof force==='boolean') this.muted=force; else this.muted=!this.muted;
     if(this.master) this.master.gain.value=this.muted?0:1;
@@ -221,7 +216,7 @@ var BG={
     }
     ctx.globalAlpha=1;
     ctx.fillStyle='rgba(200,246,255,.75)';
-    for(var b,i2=0;i2<this.bubbles.length;i2++){ b=this.bubbles[i2]; b.y-=b.s*0.016; if(b.y<-10){b.y=VIEW.h+rand(0,120); b.x=rand(0,VIEW.w);} ctx.beginPath(); ctx.arc(b.x,b.y,b.r,0,Math.PI*2); ctx.fill(); }
+    for(var i2=0;i2<this.bubbles.length;i2++){ var b=this.bubbles[i2]; b.y-=b.s*0.016; if(b.y<-10){b.y=VIEW.h+rand(0,120); b.x=rand(0,VIEW.w);} ctx.beginPath(); ctx.arc(b.x,b.y,b.r,0,Math.PI*2); ctx.fill(); }
     ctx.fillStyle='#082966'; ctx.beginPath(); ctx.moveTo(0,VIEW.h-70);
     for(var x2=0;x2<=VIEW.w;x2+=48){ var y2=VIEW.h-70 + Math.sin((t*0.003+x2)*0.03)*8; ctx.lineTo(x2,y2); }
     ctx.lineTo(VIEW.w,VIEW.h); ctx.lineTo(0,VIEW.h); ctx.closePath(); ctx.fill();
@@ -266,7 +261,6 @@ function currentGap(){
   var tighten=1 - CFG.ramp.gapTighten*t;
   return {min: baseMin*tighten, max: baseMax*tighten};
 }
-
 function spawnCoralPair(){
   var g=currentGap(); var gap=rand(g.min,g.max);
   var top=rand(50, VIEW.h-220-gap);
@@ -282,7 +276,6 @@ function spawnMine(){
   var safeX = (score<3 && x < startSafeRight) ? startSafeRight+60 : x;
   obstacles.push({kind:'mine', x:safeX, y:y, r:r, passed:false, phase:Math.random()*Math.PI*2});
 }
-
 function drawObstacles(ts){
   for(var i=0;i<obstacles.length;i++){
     var o=obstacles[i];
@@ -404,4 +397,52 @@ function loop(ts){
 }
 
 /* =================== FX =================== */
-function f
+function flashWhite(ms){
+  var start=performance.now(); ms=ms||160;
+  (function f(t){ var a=1-(t-start)/ms; if(a>0){ ctx.save(); ctx.globalAlpha=a*.6; ctx.fillStyle='#fff'; ctx.fillRect(0,0,VIEW.w,VIEW.h); ctx.restore(); requestAnimationFrame(f);} })(start);
+}
+
+/* =================== Inputs =================== */
+function onFlap(){ if(mode==='play'){ player.flap(); AudioSys.resume(); } }
+
+// START : lance direct (audio ne peut pas bloquer)
+btnStart.onclick = function(){
+  try{ AudioSys.button(); }catch(e){}
+  startGame();
+};
+btnResume.onclick = function(){ AudioSys.button(); resumeGame(); };
+btnRetry.onclick  = function(){ AudioSys.button(); startGame(); };
+
+// Canvas pointer
+cv.addEventListener('pointerdown', function(){ if(mode==='play') onFlap(); });
+
+// Clavier
+window.addEventListener('keydown', function(e){
+  if(e.code==='Space'||e.code==='ArrowUp'){ e.preventDefault(); onFlap(); }
+  if(e.code==='KeyP'){ if(mode==='play') pauseGame(); else if(mode==='paused') resumeGame(); }
+  if(e.code==='KeyR'){ if(mode==='over') startGame(); }
+  if(e.code==='KeyM'){ AudioSys.toggle(); }
+});
+
+// Auto-pause onglet
+document.addEventListener('visibilitychange', function(){
+  if(document.hidden && mode==='play') pauseGame();
+});
+
+/* =================== Boot =================== */
+var score=0, coinCount=0, spawnT=0, graceUntil=0, runStartMs=Date.now(), speedMul=1, tappedOnce=false;
+window.addEventListener('DOMContentLoaded', function(){
+  fitCanvas();
+  showOverlay('start');
+  // Musique AVANT Start (si bloquée, on déverrouille au prochain geste global)
+  AudioSys.startBackground();
+  function unlock(){ AudioSys.resume(); window.removeEventListener('pointerdown',unlock,true); window.removeEventListener('pointermove',unlock,true); window.removeEventListener('keydown',unlock,true); }
+  window.addEventListener('pointerdown',unlock,true);
+  window.addEventListener('pointermove',unlock,true);
+  window.addEventListener('keydown',unlock,true);
+  if(AudioSys.muted) AudioSys.toggle(true);
+});
+</script>
+</body>
+</html>
+```0
