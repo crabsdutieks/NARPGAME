@@ -1,619 +1,213 @@
+<!-- index.html -->
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
-<meta charset="utf-8" />
-<title>Kitty Hero: Boss & Chest</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no" />
-<style>
-  :root{
-    --bg:#0f1226;
-    --ink:#151a33;
-    --ui:#1e2450;
-    --ui2:#2c3477;
-    --good:#60f0c0;
-    --bad:#ff6b8b;
-    --gold:#ffd166;
-    --white:#ffffff;
-    --muted:#a7b0d6;
-  }
-  html,body{height:100%;margin:0;background:linear-gradient(180deg,#0e1030,#090a1e);color:#fff;font-family:system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, "Helvetica Neue", Arial, "Apple Color Emoji","Segoe UI Emoji", "Segoe UI Symbol";}
-  button{appearance:none;border:none;cursor:pointer;border-radius:14px;padding:14px 18px;font-weight:700;letter-spacing:.3px}
-  .btn{background:linear-gradient(180deg,var(--ui2),var(--ui));color:#fff;box-shadow:0 8px 20px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.08)}
-  .btn:hover{filter:brightness(1.08)}
-  .btn:active{transform:translateY(1px)}
-  .btn-alt{background:linear-gradient(180deg,#3942a6,#2a317e)}
-  .title{font-weight:900;font-size:40px;letter-spacing:.5px;margin:0;text-shadow:0 4px 20px rgba(0,0,0,.5)}
-  .subtitle{color:var(--muted);margin-top:8px}
-  #menu, #panelHowTo, #panelOptions{max-width:920px;margin:0 auto;padding:28px}
-  #menu{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:22px;text-align:center}
-  .card{background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:22px}
-  .row{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
-  .hidden{display:none!important}
-  /* Game canvas wrapper for aspect fit */
-  #gameWrap{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:radial-gradient(1200px 800px at 50% 20%, rgba(88,106,255,.15), transparent 60%)}
-  #game{background:linear-gradient(180deg,#77d1ff,#b9f3ff 40%, #9de6ff 41%, #86dbff 60%, #6fd1ff 100%);border:1px solid rgba(255,255,255,.15);border-radius:14px;box-shadow:0 10px 28px rgba(0,0,0,.45)}
-  /* Overlays in-game */
-  #hud{position:absolute;left:0;right:0;top:0;display:flex;justify-content:space-between;gap:8px;padding:10px 12px;pointer-events:none}
-  .hud-pill{background:rgba(0,0,0,.35);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:8px 12px;font-weight:700;pointer-events:auto}
-  #overlayMsg{position:absolute;inset:0;display:none;align-items:center;justify-content:center;flex-direction:column;gap:16px;background:rgba(0,0,0,.45);backdrop-filter:blur(2px)}
-  /* Virtual controls for mobile */
-  #controls{position:absolute;left:0;right:0;bottom:0;display:flex;justify-content:space-between;align-items:end;padding:10px;gap:10px;pointer-events:none}
-  .pad{display:flex;gap:10px;pointer-events:auto}
-  .ctrl{width:64px;height:64px;border-radius:14px;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.15);display:grid;place-items:center;font-weight:900}
-  .ctrl:active{transform:translateY(1px)}
-  .ctrl span{opacity:.9}
-  @media(min-width:900px){ .ctrl{width:56px;height:56px} }
-  /* Panels */
-  .panel{max-width:920px;margin:40px auto;padding:18px}
-  .panel h2{margin:0 0 8px 0}
-  .panel .lead{color:var(--muted);margin-bottom:12px}
-  .range{width:240px}
-  a.link{color:#cfe1ff;text-decoration:none;border-bottom:1px dashed rgba(255,255,255,.4)}
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cosmic Narwhal — Art playful & glitch</title>
+  <meta name="description" content="Cosmic Narwhal — mini-portfolio statique, galerie filtrée, lightbox, i18n FR/EN, thème clair/sombre, PWA-lite.">
+  <meta property="og:title" content="Cosmic Narwhal — Art playful & glitch">
+  <meta property="og:description" content="Mini-portfolio statique, galerie, lightbox, i18n FR/EN, thème clair/sombre.">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <!-- Canonical (si multi-domaines, à ajuster) -->
+  <link rel="canonical" href="." />
+  <!-- Manifest PWA-lite -->
+  <link rel="manifest" href="manifest.json">
+  <!-- Favicons (data-URI, aucun fichier binaire requis) -->
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 256 256'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' x2='1'%3E%3Cstop stop-color='%230af'/%3E%3Cstop offset='1' stop-color='%23f0f'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='256' height='256' rx='48' fill='url(%23g)'/%3E%3Cpath d='M60 150c40-10 60-50 78-58s32 6 26 20-34 22-54 28c18 8 42 12 68 10-24 22-58 34-118 30 10-8 14-18 20-30z' fill='%23fff'/%3E%3C/svg%3E">
+  <link rel="apple-touch-icon" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAQAAABudH0VAAAACXBIWXMAAAsSAAALEgHS3X78AAAAPElEQVR4nO3OsQkAIBQF0XH//1mZk1wI9JkQZ0y2d2QAAAB4bJx6gT1b1yWvQv0kq1+g7wlsd1v7HkO8w6Y8xJYgAAo0sB9c8g4d3QX9g2d4f0wAAAABJRU5ErkJggg==" sizes="192x192">
+  <!-- Security note: consider real CSP via headers on Vercel. -->
+  <!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self'"> -->
+  <meta name="theme-color" content="#0a1e4b" />
+  <link href="assets/styles.css" rel="stylesheet" />
 </head>
-<body>
+<body class="theme-auto">
+  <a class="skip-link" href="#main">Skip to content</a>
 
-<!-- ===== MENU ===== -->
-<section id="menu">
-  <div class="card" style="padding:28px 28px 16px 28px">
-    <h1 class="title">KITTY HERO</h1>
-    <p class="subtitle">Cute kitty vs monsters → defeat the boss → open the chest!</p>
-  </div>
-
-  <div class="row">
-    <button class="btn" onclick="startGame()">▶ Play</button>
-    <button class="btn btn-alt" onclick="showHowTo()">❓ How To</button>
-    <button class="btn" onclick="showOptions()">⚙️ Options</button>
-  </div>
-
-  <div class="card" style="max-width:680px">
-    <p style="margin:0;color:var(--muted)">Tip: sound will unlock after your first tap/click.</p>
-  </div>
-</section>
-
-<!-- ===== HOW TO ===== -->
-<section id="panelHowTo" class="panel hidden card">
-  <h2>How To Play</h2>
-  <p class="lead">Beat <b>8 minions</b> to summon the <b>Boss</b>. Defeat it to spawn the <b>Treasure Chest</b>. Reach it and <b>Open</b> for rewards!</p>
-  <ul>
-    <li><b>Move</b>: On-screen arrows (mobile) or <b>A/D</b> / <b>←/→</b> (desktop)</li>
-    <li><b>Jump</b>: ⤴ button (mobile) or <b>W</b> / <b>↑</b> / <b>Space</b></li>
-    <li><b>Shoot</b> hearts: ❤ button (mobile) or <b>J</b> / <b>K</b> / <b>Ctrl</b></li>
-    <li>Pick hearts wisely—projectiles deal damage to enemies and the boss.</li>
-  </ul>
-  <div class="row">
-    <button class="btn" onclick="backToMenu()">← Back</button>
-    <button class="btn" onclick="startGame()">▶ Start</button>
-  </div>
-</section>
-
-<!-- ===== OPTIONS ===== -->
-<section id="panelOptions" class="panel hidden card">
-  <h2>Options</h2>
-  <p class="lead">Sound unlocks on first click/tap.</p>
-  <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:center">
-    <div>
-      <label for="volume">Music Volume</label><br>
-      <input id="volume" class="range" type="range" min="0" max="1" step="0.01" value="0.6" oninput="setMusicVolume(this.value)">
+  <header class="site-header" role="banner">
+    <div class="container nav-row">
+      <a class="brand" href="#hero" aria-label="Cosmic Narwhal Home">
+        <span class="brand-logo" aria-hidden="true">🦄🐳</span>
+        <span class="brand-name" data-i18n="siteName">Cosmic Narwhal</span>
+      </a>
+      <nav class="primary-nav" role="navigation" aria-label="Primary">
+        <button id="burger" class="burger" aria-expanded="false" aria-controls="navMenu" aria-label="Open menu">
+          <span></span><span></span><span></span>
+        </button>
+        <ul id="navMenu" class="nav-menu">
+          <li><a href="#about" data-i18n="nav.about">À propos</a></li>
+          <li><a href="#works" data-i18n="nav.works">Œuvres</a></li>
+          <li><a href="#shop" data-i18n="nav.shop">Shop</a></li>
+          <li><a href="#timeline" data-i18n="nav.timeline">Parcours</a></li>
+          <li><a href="#faq" data-i18n="nav.faq">FAQ</a></li>
+          <li><a href="#contact" data-i18n="nav.contact">Contact</a></li>
+        </ul>
+      </nav>
+      <div class="header-actions">
+        <button id="langToggle" class="chip" aria-label="Toggle language">FR/EN</button>
+        <button id="themeToggle" class="chip" aria-label="Toggle theme">🌗</button>
+      </div>
     </div>
-    <div class="row" style="justify-content:flex-start">
-      <button class="btn" id="btnMuteMusic" onclick="toggleMusicMute()">🔈 Mute Music</button>
-      <button class="btn" id="btnMuteSfx" onclick="toggleSfxMute()">🔉 Mute SFX</button>
+  </header>
+
+  <main id="main">
+    <!-- HERO -->
+    <section id="hero" class="section hero" aria-label="Hero">
+      <canvas id="heroCanvas" aria-hidden="true"></canvas>
+      <div class="container hero-inner">
+        <h1 class="display" data-i18n="hero.title">Glitch-cute art that smiles back.</h1>
+        <p class="lead" data-i18n="hero.subtitle">A playful portfolio powered by pure HTML/CSS/JS – no deps, all vibes.</p>
+        <div class="cta-row">
+          <a class="btn primary" href="#works" data-i18n="hero.cta1">Voir la galerie</a>
+          <a class="btn ghost" href="#contact" data-i18n="hero.cta2">Parler du prochain drop</a>
+        </div>
+      </div>
+      <div class="hero-parallax deco-orbs" aria-hidden="true">
+        <span></span><span></span><span></span>
+      </div>
+    </section>
+
+    <!-- ABOUT -->
+    <section id="about" class="section" aria-labelledby="aboutTitle">
+      <div class="container grid-2">
+        <div>
+          <h2 id="aboutTitle" data-i18n="about.title">À propos</h2>
+          <p data-i18n="about.p1">Cosmic Narwhal mélange douceur et glitch pour créer des artefacts visuels qui vivent bien au-delà de l’écran.</p>
+          <p data-i18n="about.p2">Ce site démo montre ce que peut offrir un stack 100% statique : rapide, accessible, élégant.</p>
+          <div class="badges">
+            <span class="badge">Static</span>
+            <span class="badge">A11y</span>
+            <span class="badge">SEO</span>
+            <span class="badge">PWA-lite</span>
+          </div>
+        </div>
+        <div>
+          <div class="card tilt" role="img" aria-label="Cute narwhal illustration">
+            <div class="card-illus"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- WORKS -->
+    <section id="works" class="section" aria-labelledby="worksTitle">
+      <div class="container">
+        <div class="section-head">
+          <h2 id="worksTitle" data-i18n="works.title">Œuvres sélectionnées</h2>
+          <div class="filters" role="tablist" aria-label="Filters">
+            <button class="chip filter is-active" role="tab" aria-selected="true" data-filter="all" data-i18n="works.filterAll">Tout</button>
+            <button class="chip filter" role="tab" aria-selected="false" data-filter="poster" data-i18n="works.filterPoster">Affiches</button>
+            <button class="chip filter" role="tab" aria-selected="false" data-filter="sculpture" data-i18n="works.filterSculpture">Sculptures</button>
+            <button class="chip filter" role="tab" aria-selected="false" data-filter="motion" data-i18n="works.filterMotion">Motion</button>
+          </div>
+        </div>
+        <div id="gallery" class="masonry" aria-live="polite"></div>
+        <!-- Lightbox -->
+        <dialog id="lightbox" aria-labelledby="lbTitle" aria-describedby="lbDesc">
+          <div class="lightbox-inner">
+            <button class="icon-btn close" id="lbClose" aria-label="Close">✕</button>
+            <img id="lbImg" alt="">
+            <p id="lbCaption"></p>
+            <div class="lb-nav">
+              <button class="icon-btn" id="lbPrev" aria-label="Previous">◀</button>
+              <span id="lbIndex" aria-live="polite"></span>
+              <button class="icon-btn" id="lbNext" aria-label="Next">▶</button>
+            </div>
+          </div>
+        </dialog>
+      </div>
+    </section>
+
+    <!-- SHOP-LITE -->
+    <section id="shop" class="section" aria-labelledby="shopTitle">
+      <div class="container">
+        <h2 id="shopTitle" data-i18n="shop.title">Shop (lite)</h2>
+        <p class="muted" data-i18n="shop.note">Sans backend : envoi de commande par e-mail pré-rempli.</p>
+        <div id="products" class="grid-3"></div>
+      </div>
+    </section>
+
+    <!-- TIMELINE + DATA-VIZ -->
+    <section id="timeline" class="section" aria-labelledby="timeTitle">
+      <div class="container grid-2">
+        <div>
+          <h2 id="timeTitle" data-i18n="timeline.title">Parcours</h2>
+          <ol id="timeList" class="timeline" aria-live="polite"></ol>
+        </div>
+        <div>
+          <h3 data-i18n="stats.title">Drops par mois</h3>
+          <canvas id="statsChart" width="640" height="360" aria-label="Simple line chart"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- TESTIMONIALS -->
+    <section class="section" aria-labelledby="testiTitle">
+      <div class="container">
+        <h2 id="testiTitle" data-i18n="testimonials.title">Ils en parlent</h2>
+        <div id="testi" class="carousel" role="region" aria-roledescription="carousel" aria-label="Testimonials">
+          <div class="carousel-track" id="testiTrack"></div>
+          <div class="carousel-controls">
+            <button class="icon-btn" id="testiPrev" aria-label="Previous">◀</button>
+            <button class="icon-btn" id="testiNext" aria-label="Next">▶</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section id="faq" class="section" aria-labelledby="faqTitle">
+      <div class="container">
+        <h2 id="faqTitle">FAQ</h2>
+        <div id="faqList" class="accordion" role="region" aria-label="FAQ"></div>
+      </div>
+    </section>
+
+    <!-- CONTACT -->
+    <section id="contact" class="section" aria-labelledby="contactTitle">
+      <div class="container grid-2">
+        <div>
+          <h2 id="contactTitle" data-i18n="contact.title">Contact</h2>
+          <p data-i18n="contact.subtitle">Dites bonjour, proposez une collab, ou demandez un devis.</p>
+          <ul class="contact-list">
+            <li><a id="emailLink" href="mailto:hello@example.com">hello@example.com</a></li>
+            <li><a href="#" target="_blank" rel="noopener noreferrer" id="xLink">X / Twitter</a></li>
+            <li><a href="#" target="_blank" rel="noopener noreferrer" id="igLink">Instagram</a></li>
+          </ul>
+        </div>
+        <form id="contactForm" class="card" novalidate>
+          <div class="field">
+            <label for="name" data-i18n="contact.form.name">Nom</label>
+            <input id="name" name="name" type="text" required autocomplete="name" />
+          </div>
+          <div class="field">
+            <label for="email" data-i18n="contact.form.email">E-mail</label>
+            <input id="email" name="email" type="email" required autocomplete="email" />
+          </div>
+          <div class="field">
+            <label for="msg" data-i18n="contact.form.msg">Message</label>
+            <textarea id="msg" name="msg" required rows="4"></textarea>
+          </div>
+          <p class="muted" data-i18n="contact.form.note">Envoi via votre client mail (aucun backend requis).</p>
+          <button class="btn primary" type="submit" data-i18n="contact.form.send">Envoyer</button>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer" role="contentinfo">
+    <div class="container footer-row">
+      <small>© <span id="year"></span> <span data-i18n="siteName">Cosmic Narwhal</span> — <span data-i18n="footer.rights">Tous droits réservés.</span></small>
+      <a href="mailto:hello@example.com" class="chip">hello@example.com</a>
     </div>
-  </div>
-  <div class="row" style="margin-top:12px">
-    <button class="btn" onclick="backToMenu()">← Back</button>
-  </div>
-</section>
+  </footer>
 
-<!-- ===== GAME ===== -->
-<section id="gameWrap">
-  <canvas id="game" width="960" height="540"></canvas>
-
-  <div id="hud">
-    <div class="hud-pill" id="hudLeft">♥ HP: <span id="hp">5</span> &nbsp; | &nbsp; Kills: <span id="kills">0</span></div>
-    <div class="hud-pill" id="hudRight">Boss: <span id="bossHP">—</span></div>
-  </div>
-
-  <div id="overlayMsg" class="card">
-    <h2 id="overlayTitle">Paused</h2>
-    <p id="overlayText" class="subtitle">Text</p>
-    <div class="row" id="overlayActions">
-      <!-- buttons injected -->
-    </div>
-  </div>
-
-  <!-- Virtual Controls -->
-  <div id="controls">
-    <div class="pad">
-      <button class="ctrl" id="btnLeft"><span>◀</span></button>
-      <button class="ctrl" id="btnRight"><span>▶</span></button>
-    </div>
-    <div class="pad">
-      <button class="ctrl" id="btnJump"><span>⤴</span></button>
-      <button class="ctrl" id="btnShoot"><span>❤</span></button>
-    </div>
-  </div>
-</section>
-
-<!-- ===== AUDIO (inline base64) ===== -->
-<audio id="bgm" loop preload="auto"></audio>
-<audio id="sfxPop" preload="auto"></audio>
-
-<script>
-/* =========================
-   Required API
-   ========================= */
-function showHowTo(){
-  hideAllPanels();
-  document.getElementById('panelHowTo').classList.remove('hidden');
-}
-function showOptions(){
-  hideAllPanels();
-  document.getElementById('panelOptions').classList.remove('hidden');
-}
-function startGame(){
-  // unlock audio on first interaction
-  try { initAudio(); } catch(e){}
-  hideAllPanels();
-  document.getElementById('gameWrap').style.display='flex';
-  resetAndRun();
-}
-
-/* =========================
-   Panels + Menu
-   ========================= */
-function hideAllPanels(){
-  document.getElementById('menu').classList.add('hidden');
-  document.getElementById('panelHowTo').classList.add('hidden');
-  document.getElementById('panelOptions').classList.add('hidden');
-  document.getElementById('gameWrap').style.display='none';
-}
-function backToMenu(){
-  cancelAnimationFrame(state.raf);
-  state.running=false;
-  hideAllPanels();
-  document.getElementById('menu').classList.remove('hidden');
-}
-
-/* =========================
-   Inline Base64 Audio
-   (generated + tested)
-   ========================= */
-const BGM_B64 = "data:audio/wav;base64,{{BGM_PLACEHOLDER}}";
-const SFX_B64 = "data:audio/wav;base64,{{SFX_PLACEHOLDER}}";
-
-let audioReady = false;
-let musicMuted = false;
-let sfxMuted = false;
-
-function initAudio(){
-  if(audioReady) return;
-  const bgm = document.getElementById('bgm');
-  const sfx = document.getElementById('sfxPop');
-  bgm.src = BGM_B64;
-  sfx.src = SFX_B64;
-  bgm.volume = loadNum('musicVol', 0.6);
-  sfx.volume = 0.9;
-  // Some browsers need a play call inside a user gesture
-  bgm.play().then(()=>{audioReady=true;}).catch(()=>{ /* will retry on next gesture */ });
-  // Attach once-more unlock on canvas tap if needed
-  document.body.addEventListener('pointerdown', function once(){
-    if(!audioReady){
-      bgm.play().then(()=>{audioReady=true;}).catch(()=>{});
-    }
-    document.body.removeEventListener('pointerdown', once);
-  }, {once:true});
-  updateOptionButtons();
-}
-function setMusicVolume(v){
-  v = Number(v);
-  document.getElementById('bgm').volume = v;
-  saveNum('musicVol', v);
-}
-function toggleMusicMute(){
-  musicMuted = !musicMuted;
-  const bgm = document.getElementById('bgm');
-  if(musicMuted) bgm.pause(); else if(audioReady) bgm.play();
-  updateOptionButtons();
-}
-function toggleSfxMute(){
-  sfxMuted = !sfxMuted;
-  updateOptionButtons();
-}
-function updateOptionButtons(){
-  document.getElementById('btnMuteMusic').textContent = (musicMuted ? '🔈 Unmute Music' : '🔈 Mute Music');
-  document.getElementById('btnMuteSfx').textContent = (sfxMuted ? '🔉 Unmute SFX' : '🔉 Mute SFX');
-}
-
-/* =========================
-   Game Core
-   ========================= */
-const canvas = document.getElementById('game');
-const ctx = canvas.getContext('2d',{alpha:false});
-const hudHP = document.getElementById('hp');
-const hudKills = document.getElementById('kills');
-const hudBossHP = document.getElementById('bossHP');
-const overlay = document.getElementById('overlayMsg');
-const overlayTitle = document.getElementById('overlayTitle');
-const overlayText = document.getElementById('overlayText');
-const overlayActions = document.getElementById('overlayActions');
-
-const state = {
-  running:false,
-  raf:0,
-  time:0,
-  dt:0,
-  last:0,
-  worldW: 2400,
-  gravity: 1800,
-  floorY: 420,
-  camX: 0,
-  phase:'play', // play | boss | win | gameover
-  kills:0,
-  player:null,
-  enemies:[],
-  bullets:[],
-  boss:null,
-  chest:null,
-  keys:{left:false,right:false,up:false,shoot:false},
-  touch:{left:false,right:false,up:false,shoot:false},
-};
-
-function resetAndRun(){
-  // Resize for pixel-perfect scaling
-  fitCanvas();
-  window.addEventListener('resize', fitCanvas);
-
-  // Input
-  setupKeyboard();
-  setupTouch();
-
-  // Entities
-  state.kills = 0;
-  state.enemies.length = 0;
-  state.bullets.length = 0;
-  state.boss = null;
-  state.chest = null;
-  state.phase = 'play';
-  state.camX = 0;
-  state.time = 0;
-  state.last = performance.now();
-  state.player = makePlayer(80, state.floorY-56);
-
-  // Spawn a few to begin
-  for(let i=0;i<4;i++) spawnEnemy(400 + i*280 + Math.random()*80);
-
-  // HUD
-  updateHUD();
-
-  // run!
-  state.running = true;
-  loop();
-}
-
-function loop(){
-  if(!state.running) return;
-  const now = performance.now();
-  state.dt = Math.min((now - state.last)/1000, 1/20);
-  state.last = now;
-  state.time += state.dt;
-
-  step(state.dt);
-  draw();
-
-  state.raf = requestAnimationFrame(loop);
-}
-
-function step(dt){
-  const p = state.player;
-  // horizontal input
-  let move = 0;
-  if(state.keys.left || state.touch.left) move -= 1;
-  if(state.keys.right || state.touch.right) move += 1;
-  p.vx += move * 2400 * dt;
-  // friction
-  p.vx *= 0.88;
-  // clamp
-  p.vx = clamp(p.vx,-350,350);
-
-  // jump
-  if((state.keys.up || state.touch.up) && p.onGround){
-    p.vy = -720; p.onGround=false;
-    // small sfx
-    playPop();
-  }
-
-  // shoot
-  if(state.keys.shoot || state.touch.shoot){
-    tryShoot();
-  }
-
-  // physics
-  p.vy += state.gravity * dt;
-  p.x += p.vx * dt;
-  p.y += p.vy * dt;
-
-  // ground collide
-  if(p.y + p.h > state.floorY){
-    p.y = state.floorY - p.h;
-    p.vy = 0;
-    p.onGround = true;
-  }
-
-  // world bounds
-  p.x = clamp(p.x, 20, state.worldW-20);
-
-  // spawn enemies over time
-  if(state.phase === 'play'){
-    if(state.enemies.length < 5 && Math.random() < 0.02) {
-      spawnEnemy(state.camX + canvas.width + 200 + Math.random()*200);
-    }
-    // boss condition
-    if(state.kills >= 8 && !state.boss){
-      spawnBoss(state.camX + canvas.width + 320);
-      state.phase = 'boss';
-    }
-  }
-
-  // bullets
-  for(let i=state.bullets.length-1;i>=0;i--){
-    const b = state.bullets[i];
-    b.x += b.vx*dt;
-    b.y += b.vy*dt;
-    b.life -= dt;
-    if(b.life<=0) { state.bullets.splice(i,1); continue; }
-    // hit enemies
-    for(let j=state.enemies.length-1;j>=0;j--){
-      const e = state.enemies[j];
-      if(aabb(b, e)){
-        e.hp -= 1; b.life=0;
-        if(e.hp<=0){ state.enemies.splice(j,1); state.kills++; updateHUD(); }
-        break;
-      }
-    }
-    // hit boss
-    if(state.boss && aabb(b, state.boss)){
-      state.boss.hp -= 1; b.life=0; updateHUD();
-      if(state.boss.hp<=0){
-        // boss defeated → chest
-        state.boss = null;
-        spawnChest(p.x + 240);
-        state.phase = 'win'; // we still allow movement to chest
-        showOverlay("Boss Defeated!", "A treasure chest appeared ahead. Reach it and open it!", [
-          {label:"OK",action:closeOverlay}
-        ]);
-      }
-    }
-  }
-
-  // enemies AI
-  for(const e of state.enemies){
-    e.x -= e.speed * dt;
-    e.t += dt;
-    e.y = state.floorY - e.h - Math.sin(e.t*3)*6; // bobbing
-    // damage player if collide
-    if(aabb(e, p)){
-      damagePlayer();
-      // knockback
-      p.vx = -Math.sign(e.x - p.x) * 260;
-    }
-  }
-  // cleanup enemies off-screen
-  for(let i=state.enemies.length-1;i>=0;i--){
-    if(state.enemies[i].x < state.camX - 200) state.enemies.splice(i,1);
-  }
-
-  // boss simple pattern
-  if(state.boss){
-    const b=state.boss;
-    b.t += dt;
-    b.x -= 40*dt;
-    b.y = state.floorY - b.h - 40 - Math.sin(b.t*1.7)*22;
-    if(aabb(b, p)){
-      damagePlayer();
-      p.vx = -Math.sign(b.x - p.x) * 320;
-    }
-  }
-
-  // chest interact
-  if(state.chest){
-    const c=state.chest;
-    c.t += dt;
-    c.openAnim = Math.max(0, c.openAnim - dt*2);
-    // wiggle
-    c.wiggle = Math.sin(c.t*6)*2;
-    // reach chest
-    if(aabb(c, p) && !c.opened){
-      showOverlay("Open Chest?", "Tap the button to claim your reward!", [
-        {label:"Open Chest 🎁", action:openChest}
-      ]);
-    }
-  }
-
-  // camera follows
-  state.camX = clamp(p.x - canvas.width*0.35, 0, state.worldW - canvas.width);
-
-  // death
-  if(p.hp<=0 && state.phase!=='gameover'){
-    state.phase='gameover';
-    showOverlay("Game Over", "Kitty needs a hug. Try again!", [
-      {label:"Replay", action:()=>{ closeOverlay(); resetAndRun(); }},
-      {label:"Menu", action:()=>{ closeOverlay(); backToMenu(); }}
-    ]);
-  }
-}
-
-function draw(){
-  const cw=canvas.width, ch=canvas.height;
-  const cam = state.camX|0;
-
-  // sky (already gradient background), draw distant clouds
-  ctx.clearRect(0,0,cw,ch);
-  drawClouds(cam);
-
-  // parallax hills
-  drawHills(cam);
-
-  // ground
-  ctx.fillStyle = '#55c06a';
-  ctx.fillRect(0, state.floorY, cw, ch-state.floorY);
-  // ground top line
-  ctx.fillStyle = '#3aa351';
-  ctx.fillRect(0, state.floorY-6, cw, 6);
-
-  // chest
-  if(state.chest) drawChest(state.chest, cam);
-
-  // boss
-  if(state.boss) drawBoss(state.boss, cam);
-
-  // enemies
-  for(const e of state.enemies) drawEnemy(e, cam);
-
-  // bullets
-  for(const b of state.bullets) drawHeart(b, cam);
-
-  // player
-  drawPlayer(state.player, cam);
-
-  // UI hints if win phase and no chest yet
-  // (done via overlay)
-}
-
-/* =========================
-   Entities & Drawing
-   ========================= */
-function makePlayer(x,y){
-  return {x,y,w:40,h:56,vx:0,vy:0,onGround:false,hp:5,shootCd:0, face:1, blink:0};
-}
-function spawnEnemy(x){
-  state.enemies.push({x, y:state.floorY-32, w:34,h:32,hp:2, speed: 90+Math.random()*60, t:0});
-}
-function spawnBoss(x){
-  state.boss = {x, y:state.floorY-160, w:130, h:120, hp: 30, t:0};
-}
-function spawnChest(x){
-  state.chest = {x, y: state.floorY-40, w:50, h:38, opened:false, openAnim:0, t:0, wiggle:0};
-}
-
-function drawPlayer(p, cam){
-  const x = (p.x - cam)|0, y = (p.y)|0;
-  // body
-  roundRect(ctx, x-18, y+6, 36, 34, 12, '#fff', '#e6e6ff');
-  // head
-  roundRect(ctx, x-22, y-22, 44, 36, 16, '#fff', '#fff');
-  // ears
-  roundedTri(ctx, x-16, y-22, 12, 14, '#fff');
-  roundedTri(ctx, x+16, y-22, -12, 14, '#fff');
-  // bow (cute vibe, generic)
-  ctx.fillStyle = '#ff7fab';
-  ctx.beginPath(); ctx.arc(x-6, y-12, 6, 0, Math.PI*2); ctx.fill();
-  ctx.beginPath(); ctx.arc(x+6, y-12, 6, 0, Math.PI*2); ctx.fill();
-  ctx.fillStyle = '#ffafc9'; ctx.beginPath(); ctx.arc(x, y-12, 4, 0, Math.PI*2); ctx.fill();
-  // eyes
-  ctx.fillStyle = '#222';
-  const blink = (Math.sin(state.time*6)+1)/2<0.08;
-  const eyeH = blink?2:5;
-  ctx.fillRect(x-8, y-8, 5, eyeH);
-  ctx.fillRect(x+3, y-8, 5, eyeH);
-  // feet
-  roundRect(ctx, x-16, y+38, 14, 10, 5, '#ffd3a3');
-  roundRect(ctx, x+2,  y+38, 14, 10, 5, '#ffd3a3');
-  // outline cute blush
-  ctx.fillStyle = 'rgba(255,120,150,.25)';
-  ctx.beginPath(); ctx.ellipse(x-14,y,7,4,0,0,Math.PI*2); ctx.fill();
-  ctx.beginPath(); ctx.ellipse(x+14,y,7,4,0,0,Math.PI*2); ctx.fill();
-}
-
-function drawEnemy(e, cam){
-  const x=(e.x - cam)|0, y=e.y|0;
-  // slime blob
-  ctx.fillStyle = '#7a88ff';
-  ctx.beginPath(); ctx.ellipse(x, y+e.h/2, e.w/2, e.h/2, 0, 0, Math.PI*2); ctx.fill();
-  // eyes
-  ctx.fillStyle='#142';
-  ctx.fillRect(x-6, y+6, 3, 6);
-  ctx.fillRect(x+3, y+6, 3, 6);
-  // hp dots
-  for(let i=0;i<e.hp;i++){
-    ctx.fillStyle='#e3f';
-    ctx.fillRect(x-6 + i*6, y-6, 4, 4);
-  }
-}
-
-function drawBoss(b, cam){
-  const x=(b.x - cam)|0, y=b.y|0;
-  // big round meanie
-  ctx.fillStyle = '#ff6b8b';
-  ctx.beginPath(); ctx.ellipse(x, y+b.h/2, b.w/2, b.h/2, 0, 0, Math.PI*2); ctx.fill();
-  // mouth
-  ctx.fillStyle='#300'; ctx.fillRect(x-30, y+40, 60, 16);
-  // eyes angry
-  ctx.fillStyle='#200';
-  ctx.fillRect(x-38, y+18, 24, 8);
-  ctx.fillRect(x+14, y+18, 24, 8);
-  // horns
-  roundedTri(ctx, x-50, y+24, -20, 24, '#ffe4a6');
-  roundedTri(ctx, x+50, y+24, 20, 24, '#ffe4a6');
-}
-
-function drawHeart(b, cam){
-  const x=(b.x - cam)|0, y=b.y|0, s=8;
-  ctx.save(); ctx.translate(x,y); ctx.rotate(-0.2);
-  ctx.fillStyle='#ff5470';
-  ctx.beginPath();
-  ctx.moveTo(0,0);
-  ctx.bezierCurveTo(-s,-s*0.6, -s*1.2, s*0.5, 0, s);
-  ctx.bezierCurveTo(s*1.2, s*0.5, s, -s*0.6, 0,0);
-  ctx.fill();
-  ctx.restore();
-}
-
-function drawChest(c, cam){
-  const x=(c.x - cam)|0, y=c.y|0;
-  const open = c.openAnim>0 ? c.openAnim : 0;
-  const lidAngle = open*0.9;
-  // base
-  roundRect(ctx, x-25, y-10, 50, 38, 8, '#b67c2a', '#d39a42');
-  // lid (rotating)
-  ctx.save();
-  ctx.translate(x, y-10);
-  ctx.rotate(-lidAngle);
-  roundRect(ctx, -28, -16, 56, 20, 8, '#c88933', '#e6ad4a');
-  ctx.restore();
-  // band & lock
-  ctx.fillStyle='#6b3e13'; ctx.fillRect(x-5,y-10,10,38);
-  ctx.fillStyle='#ffd166'; ctx.fillRect(x-4, y+6, 8, 10); ctx.beginPath(); ctx.arc(x, y+12, 3, 0, Math.PI*2); ctx.fill();
-  // wiggle shadow
-  ctx.globalAlpha=.2; ctx.fillStyle='#000'; ctx.beginPath(); ctx.ellipse(x, y+38, 24, 6, 0, 0, Math.PI*2); ctx.fill(); ctx.globalAlpha=1;
-}
-
-function drawClouds(cam){
-  ctx.save();
-  const speed=0.3;
-  ctx.fillStyle='rgba(255,255,255,.7)';
-  const base = ((cam*speed)|0)%400;
-  for(let i=-1;i<6;i++){
-    blob( i*400 - base, 70, 60, 22);
-  }
-  ctx.restore();
-}
-function blob(x,y,w,h){
-  ctx.beginPath();
-  ctx.ellipse(x, y, w, h, 0, 0, Math.PI*2); ctx.ellipse(x+50, y+6, w*.7, h*.8, 0, 0, Math.PI*2);
-  ctx.ellipse(x-40, y+10, w*.6, h*.7, 0, 0, Math.PI*2); ctx.fill();
-}
-function drawHills(cam){
-  ctx.save();
-  const hBase = state.floorY - 12;
-  ctx.fillStyle = '#86dbff';
-  ctx.fillRect(0, hBase-160, canvas.width, 160);
-  // parallax front
-  ctx.fillStyle='#4eb35f';
-  const base = ((cam*0.6)|0)%200;
-  for(let x=-base-200;x<canvas.width+200;x+=200){
-    ctx.beginPath();
-    ctx.moveTo(x, hBase);
-    ctx.quadraticCurveTo(x+50,hBase-40, x+100,hBase);
-    ctx.
+  <!-- Analytics hook placeholder
+  <script>
+    // window.__analytics = { track: (e,p)=>console.log('[analytics]', e, p) };
+  </script>
+  -->
+  <script src="assets/app.js" defer></script>
+</body>
+</html>
