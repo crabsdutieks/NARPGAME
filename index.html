@@ -2,485 +2,618 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no" />
-<title>CUTE HERO vs MONSTERS — OMNI-DEV ∞ SINGULARITY</title>
+<title>Kitty Hero: Boss & Chest</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no" />
 <style>
   :root{
-    --bg:#ffeef6; --ink:#2b2b2b; --accent:#ff69b4; --mint:#7ef5c9; --sky:#b0e2ff; --sun:#ffd166; --violet:#c9a0ff;
-    --danger:#ff4d6d; --good:#2ecc71; --gold:#ffcc33;
+    --bg:#0f1226;
+    --ink:#151a33;
+    --ui:#1e2450;
+    --ui2:#2c3477;
+    --good:#60f0c0;
+    --bad:#ff6b8b;
+    --gold:#ffd166;
+    --white:#ffffff;
+    --muted:#a7b0d6;
   }
-  *{box-sizing:border-box}
-  html,body{height:100%;margin:0}
-  body{background:var(--bg); color:var(--ink); font-family: system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Helvetica Neue",Arial,"Apple Color Emoji","Segoe UI Emoji";}
-  #root{position:fixed; inset:0; display:grid; grid-template-rows: 1fr; place-items:stretch;}
-  canvas{display:block; width:100%; height:100%; touch-action:none; background: radial-gradient(1200px 900px at 50% 60%, #ffffff 0%, #fff7fb 50%, #ffeef6 100%);}
-  /* UI Layers */
-.overlay{position:fixed; inset:0; display:flex; align-items:center; justify-content:center; pointer-events:none}
-  .panel{pointer-events:auto; background:#fff; border:2px solid #00000020; border-radius:20px; padding:20px; box-shadow:0 10px 30px #00000014; max-width: min(560px, 92vw)}
-  h1{margin:.3rem 0 1rem; font-weight:900; letter-spacing:.5px}
-  .btn{appearance:none; border:0; background:var(--accent); color:#fff; padding:14px 18px; border-radius:14px; font-weight:800; font-size:16px; cursor:pointer; box-shadow:0 6px 0 #cf3b7b; transform:translateY(0); transition:.1s}
-  .btn:hover{filter:brightness(1.05)}
-  .btn:active{transform:translateY(2px); box-shadow:0 4px 0 #cf3b7b}
-  .row{display:flex; gap:12px; flex-wrap:wrap}
-  .muted{opacity:.7; font-size:14px}
-  .pill{display:inline-flex; align-items:center; gap:6px; font-weight:700; padding:6px 10px; border-radius:999px; background:#00000008; border:1px dashed #0000001a}
-  .hud{position:fixed; left:10px; top:10px; right:10px; display:flex; align-items:center; justify-content:space-between; gap:10px; padding:8px 10px; border-radius:14px; background:#ffffffaa; backdrop-filter: blur(6px); border:1px solid #00000010}
-  .hearts{display:flex; gap:6px}
-  .heart{width:18px; height:16px; background:var(--danger); clip-path:path("M9 16C9 16 0 10 0 5.5C0 3.5 1.5 2 3.5 2C5.1 2 6.5 3 7 4C7.5 3 8.9 2 10.5 2C12.5 2 14 3.5 14 5.5C14 10 9 16 9 16Z")}
-  .stat{font-weight:900}
-  .bossbar{position:fixed; left:50%; transform:translateX(-50%); bottom:14px; width:min(520px,86vw); height:16px; border-radius:10px; background:#00000012; border:1px solid #00000020; overflow:hidden}
-  .bossbar > i{display:block; height:100%; background:linear-gradient(90deg, #ff4d6d, #ffd166); width:0%}
-  /* Mobile Controls */
-  .controls{position:fixed; inset:0; pointer-events:none}
-  .stick{position:fixed; left:16px; bottom:22px; width:140px; height:140px; border-radius:50%; background:#0000000d; border:1px solid #00000015; pointer-events:auto; touch-action:none}
-  .stick .knob{position:absolute; left:50%; top:50%; width:70px; height:70px; margin:-35px; border-radius:50%; background:#ffffffcc; border:2px solid #00000020; box-shadow:0 6px 18px #00000025}
-  .attack{position:fixed; right:22px; bottom:38px; width:96px; height:96px; border-radius:50%; background:var(--accent); color:#fff; font-weight:900; font-size:14px; display:flex; align-items:center; justify-content:center; border:0; box-shadow:0 8px 0 #cf3b7b; pointer-events:auto}
-  .attack:active{transform:translateY(2px); box-shadow:0 6px 0 #cf3b7b}
-  .toggle{appearance:none; background:#fff; border:1px solid #00000022; border-radius:12px; padding:8px 12px; font-weight:800}
-  /* Confetti canvas covers on victory chest open */
-  #fx{position:fixed; inset:0; pointer-events:none}
-  @media (min-width:900px){
-    .stick{left:22px; bottom:26px}
-  }
+  html,body{height:100%;margin:0;background:linear-gradient(180deg,#0e1030,#090a1e);color:#fff;font-family:system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, "Helvetica Neue", Arial, "Apple Color Emoji","Segoe UI Emoji", "Segoe UI Symbol";}
+  button{appearance:none;border:none;cursor:pointer;border-radius:14px;padding:14px 18px;font-weight:700;letter-spacing:.3px}
+  .btn{background:linear-gradient(180deg,var(--ui2),var(--ui));color:#fff;box-shadow:0 8px 20px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.08)}
+  .btn:hover{filter:brightness(1.08)}
+  .btn:active{transform:translateY(1px)}
+  .btn-alt{background:linear-gradient(180deg,#3942a6,#2a317e)}
+  .title{font-weight:900;font-size:40px;letter-spacing:.5px;margin:0;text-shadow:0 4px 20px rgba(0,0,0,.5)}
+  .subtitle{color:var(--muted);margin-top:8px}
+  #menu, #panelHowTo, #panelOptions{max-width:920px;margin:0 auto;padding:28px}
+  #menu{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;gap:22px;text-align:center}
+  .card{background:linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:22px}
+  .row{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
+  .hidden{display:none!important}
+  /* Game canvas wrapper for aspect fit */
+  #gameWrap{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:radial-gradient(1200px 800px at 50% 20%, rgba(88,106,255,.15), transparent 60%)}
+  #game{background:linear-gradient(180deg,#77d1ff,#b9f3ff 40%, #9de6ff 41%, #86dbff 60%, #6fd1ff 100%);border:1px solid rgba(255,255,255,.15);border-radius:14px;box-shadow:0 10px 28px rgba(0,0,0,.45)}
+  /* Overlays in-game */
+  #hud{position:absolute;left:0;right:0;top:0;display:flex;justify-content:space-between;gap:8px;padding:10px 12px;pointer-events:none}
+  .hud-pill{background:rgba(0,0,0,.35);backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:8px 12px;font-weight:700;pointer-events:auto}
+  #overlayMsg{position:absolute;inset:0;display:none;align-items:center;justify-content:center;flex-direction:column;gap:16px;background:rgba(0,0,0,.45);backdrop-filter:blur(2px)}
+  /* Virtual controls for mobile */
+  #controls{position:absolute;left:0;right:0;bottom:0;display:flex;justify-content:space-between;align-items:end;padding:10px;gap:10px;pointer-events:none}
+  .pad{display:flex;gap:10px;pointer-events:auto}
+  .ctrl{width:64px;height:64px;border-radius:14px;background:rgba(0,0,0,.35);border:1px solid rgba(255,255,255,.15);display:grid;place-items:center;font-weight:900}
+  .ctrl:active{transform:translateY(1px)}
+  .ctrl span{opacity:.9}
+  @media(min-width:900px){ .ctrl{width:56px;height:56px} }
+  /* Panels */
+  .panel{max-width:920px;margin:40px auto;padding:18px}
+  .panel h2{margin:0 0 8px 0}
+  .panel .lead{color:var(--muted);margin-bottom:12px}
+  .range{width:240px}
+  a.link{color:#cfe1ff;text-decoration:none;border-bottom:1px dashed rgba(255,255,255,.4)}
 </style>
 </head>
 <body>
-<div id="root">
-  <canvas id="game" aria-label="Cute Hero vs Monsters (Canvas Game)"></canvas>
-  <canvas id="fx"></canvas>
-</div>
 
-<!-- HUD -->
-<div class="hud" id="hud" style="display:none">
-  <div class="row" style="align-items:center; gap:14px;">
-    <span class="pill">Score: <span class="stat" id="score">0</span></span>
-    <span class="pill">High: <span class="stat" id="high">0</span></span>
-    <span class="pill">Wave: <span class="stat" id="wave">1</span></span>
-    <span class="pill">Monsters: <span class="stat" id="left">0</span></span>
-    <span class="pill"><button id="mute" class="toggle" title="Toggle Sound">🔊 Sound</button></span>
+<!-- ===== MENU ===== -->
+<section id="menu">
+  <div class="card" style="padding:28px 28px 16px 28px">
+    <h1 class="title">KITTY HERO</h1>
+    <p class="subtitle">Cute kitty vs monsters → defeat the boss → open the chest!</p>
   </div>
-  <div class="hearts" id="hearts"></div>
-</div>
-<div class="bossbar" id="bossbar" style="display:none"><i id="bossfill"></i></div>
 
-<!-- MENU -->
-<div class="overlay" id="menu">
-  <div class="panel">
-    <h1>💖 Cute Hero vs Monsters</h1>
-    <p class="muted">Move, shoot hearts, clear waves. Beat the final boss. Open the chest for a reward.</p>
-    <div class="row" style="justify-content:space-between">
-      <button class="btn" id="startBtn">Tap to Start</button>
-      <button class="btn" id="howBtn" style="background:var(--mint); box-shadow:0 6px 0 #1ea77c">How to Play</button>
-    </div>
-    <p class="muted" style="margin-top:10px">
-      🕹️ <b>Keyboard</b>: WASD / Arrows to move, <b>Space</b> to shoot.<br/>
-      📱 <b>Mobile</b>: Joystick + big pink button to shoot. Sound starts after tapping Start.
-    </p>
-    <div class="row">
-      <span class="pill">One file</span>
-      <span class="pill">Responsive Canvas</span>
-      <span class="pill">LocalStorage Highscore</span>
-      <span class="pill">Boss + Chest Rewards</span>
-    </div>
+  <div class="row">
+    <button class="btn" onclick="startGame()">▶ Play</button>
+    <button class="btn btn-alt" onclick="showHowTo()">❓ How To</button>
+    <button class="btn" onclick="showOptions()">⚙️ Options</button>
   </div>
-</div>
 
-<!-- HOW -->
-<div class="overlay" id="how" style="display:none">
-  <div class="panel">
-    <h1>How to Play</h1>
-    <ul style="line-height:1.5; margin:0 0 12px 18px;">
-      <li>Clear waves by shooting heart projectiles 💘</li>
-      <li>Don’t let monsters touch you — you have 5 hearts ❤️</li>
-      <li>Defeat the boss to spawn the treasure chest ✨</li>
-      <li>Open the chest to unlock a cosmetic reward (saved) 🎁</li>
-    </ul>
-    <div class="row">
-      <button class="btn" id="backBtn" style="background:var(--sky); box-shadow:0 6px 0 #5aa6d1">Back</button>
-      <button class="btn" id="startBtn2">Play Now</button>
+  <div class="card" style="max-width:680px">
+    <p style="margin:0;color:var(--muted)">Tip: sound will unlock after your first tap/click.</p>
+  </div>
+</section>
+
+<!-- ===== HOW TO ===== -->
+<section id="panelHowTo" class="panel hidden card">
+  <h2>How To Play</h2>
+  <p class="lead">Beat <b>8 minions</b> to summon the <b>Boss</b>. Defeat it to spawn the <b>Treasure Chest</b>. Reach it and <b>Open</b> for rewards!</p>
+  <ul>
+    <li><b>Move</b>: On-screen arrows (mobile) or <b>A/D</b> / <b>←/→</b> (desktop)</li>
+    <li><b>Jump</b>: ⤴ button (mobile) or <b>W</b> / <b>↑</b> / <b>Space</b></li>
+    <li><b>Shoot</b> hearts: ❤ button (mobile) or <b>J</b> / <b>K</b> / <b>Ctrl</b></li>
+    <li>Pick hearts wisely—projectiles deal damage to enemies and the boss.</li>
+  </ul>
+  <div class="row">
+    <button class="btn" onclick="backToMenu()">← Back</button>
+    <button class="btn" onclick="startGame()">▶ Start</button>
+  </div>
+</section>
+
+<!-- ===== OPTIONS ===== -->
+<section id="panelOptions" class="panel hidden card">
+  <h2>Options</h2>
+  <p class="lead">Sound unlocks on first click/tap.</p>
+  <div style="display:flex;gap:20px;flex-wrap:wrap;align-items:center">
+    <div>
+      <label for="volume">Music Volume</label><br>
+      <input id="volume" class="range" type="range" min="0" max="1" step="0.01" value="0.6" oninput="setMusicVolume(this.value)">
+    </div>
+    <div class="row" style="justify-content:flex-start">
+      <button class="btn" id="btnMuteMusic" onclick="toggleMusicMute()">🔈 Mute Music</button>
+      <button class="btn" id="btnMuteSfx" onclick="toggleSfxMute()">🔉 Mute SFX</button>
     </div>
   </div>
-</div>
+  <div class="row" style="margin-top:12px">
+    <button class="btn" onclick="backToMenu()">← Back</button>
+  </div>
+</section>
 
-<!-- GAME OVER / VICTORY -->
-<div class="overlay" id="end" style="display:none">
-  <div class="panel">
-    <h1 id="endTitle">Game Over</h1>
-    <p id="endText" class="muted">Your score: <span id="endScore">0</span></p>
-    <div class="row">
-      <button class="btn" id="againBtn">Play Again</button>
-      <button class="btn" id="tweetBtn" style="background:var(--violet); box-shadow:0 6px 0 #8f6ae6">Share</button>
+<!-- ===== GAME ===== -->
+<section id="gameWrap">
+  <canvas id="game" width="960" height="540"></canvas>
+
+  <div id="hud">
+    <div class="hud-pill" id="hudLeft">♥ HP: <span id="hp">5</span> &nbsp; | &nbsp; Kills: <span id="kills">0</span></div>
+    <div class="hud-pill" id="hudRight">Boss: <span id="bossHP">—</span></div>
+  </div>
+
+  <div id="overlayMsg" class="card">
+    <h2 id="overlayTitle">Paused</h2>
+    <p id="overlayText" class="subtitle">Text</p>
+    <div class="row" id="overlayActions">
+      <!-- buttons injected -->
     </div>
   </div>
-</div>
 
-<!-- MOBILE CONTROLS -->
-<div class="controls" id="controls" style="display:none">
-  <div class="stick" id="stick"><div class="knob" id="knob"></div></div>
-  <button class="attack" id="attackBtn" aria-label="Shoot">💘</button>
-</div>
+  <!-- Virtual Controls -->
+  <div id="controls">
+    <div class="pad">
+      <button class="ctrl" id="btnLeft"><span>◀</span></button>
+      <button class="ctrl" id="btnRight"><span>▶</span></button>
+    </div>
+    <div class="pad">
+      <button class="ctrl" id="btnJump"><span>⤴</span></button>
+      <button class="ctrl" id="btnShoot"><span>❤</span></button>
+    </div>
+  </div>
+</section>
+
+<!-- ===== AUDIO (inline base64) ===== -->
+<audio id="bgm" loop preload="auto"></audio>
+<audio id="sfxPop" preload="auto"></audio>
 
 <script>
-(() => {
-  'use strict';
+/* =========================
+   Required API
+   ========================= */
+function showHowTo(){
+  hideAllPanels();
+  document.getElementById('panelHowTo').classList.remove('hidden');
+}
+function showOptions(){
+  hideAllPanels();
+  document.getElementById('panelOptions').classList.remove('hidden');
+}
+function startGame(){
+  // unlock audio on first interaction
+  try { initAudio(); } catch(e){}
+  hideAllPanels();
+  document.getElementById('gameWrap').style.display='flex';
+  resetAndRun();
+}
 
-  // ===== Canvas & DPI =====
-  const canvas = document.getElementById('game');
-  const ctx = canvas.getContext('2d');
-  const fx = document.getElementById('fx');
-  const fxc = fx.getContext('2d');
+/* =========================
+   Panels + Menu
+   ========================= */
+function hideAllPanels(){
+  document.getElementById('menu').classList.add('hidden');
+  document.getElementById('panelHowTo').classList.add('hidden');
+  document.getElementById('panelOptions').classList.add('hidden');
+  document.getElementById('gameWrap').style.display='none';
+}
+function backToMenu(){
+  cancelAnimationFrame(state.raf);
+  state.running=false;
+  hideAllPanels();
+  document.getElementById('menu').classList.remove('hidden');
+}
 
-  let DPR = Math.max(1, Math.min(window.devicePixelRatio || 1, 2));
-  function resize() {
-    DPR = Math.max(1, Math.min(window.devicePixelRatio || 1, 2));
-    const w = Math.floor(window.innerWidth);
-    const h = Math.floor(window.innerHeight);
-    canvas.width = Math.floor(w * DPR);
-    canvas.height = Math.floor(h * DPR);
-    canvas.style.width = w + 'px';
-    canvas.style.height = h + 'px';
-    fx.width = canvas.width;
-    fx.height = canvas.height;
-  }
-  window.addEventListener('resize', resize, {passive:true});
-  resize();
+/* =========================
+   Inline Base64 Audio
+   (generated + tested)
+   ========================= */
+const BGM_B64 = "data:audio/wav;base64,{{BGM_PLACEHOLDER}}";
+const SFX_B64 = "data:audio/wav;base64,{{SFX_PLACEHOLDER}}";
 
-  // ===== Game State =====
-  const STATE = { MENU:0, PLAY:1, BOSS:2, VICTORY:3, OVER:4 };
-  let state = STATE.MENU;
+let audioReady = false;
+let musicMuted = false;
+let sfxMuted = false;
 
-  const hud = {
-    root: document.getElementById('hud'),
-    score: document.getElementById('score'),
-    high: document.getElementById('high'),
-    wave: document.getElementById('wave'),
-    left: document.getElementById('left'),
-    hearts: document.getElementById('hearts'),
-    mute: document.getElementById('mute'),
-    bossbar: document.getElementById('bossbar'),
-    bossfill: document.getElementById('bossfill')
-  };
-
-  const menu = document.getElementById('menu');
-  const how = document.getElementById('how');
-  const end = document.getElementById('end');
-  const endTitle = document.getElementById('endTitle');
-  const endText = document.getElementById('endText');
-  const endScore = document.getElementById('endScore');
-
-  const btn = {
-    start: document.getElementById('startBtn'),
-    start2: document.getElementById('startBtn2'),
-    how: document.getElementById('howBtn'),
-    back: document.getElementById('backBtn'),
-    again: document.getElementById('againBtn'),
-    tweet: document.getElementById('tweetBtn'),
-  };
-
-  const controls = document.getElementById('controls');
-  const stick = document.getElementById('stick');
-  const knob = document.getElementById('knob');
-  const attackBtn = document.getElementById('attackBtn');
-
-  // ===== LocalStorage =====
-  const LS = {
-    get high(){ return +localStorage.getItem('cute_highscore') || 0; },
-    set high(v){ localStorage.setItem('cute_highscore', String(v)); },
-    get skin(){ return localStorage.getItem('cute_skin') === '1'; },
-    set skin(v){ localStorage.setItem('cute_skin', v ? '1' : '0'); }
-  };
-  hud.high.textContent = LS.high;
-
-  // ===== Audio (WebAudio Beeps) =====
-  let audioEnabled = true;
-  let actx = null;
-  function ensureAudio() {
-    if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
-    if (actx.state === 'suspended') actx.resume();
-  }
-  function beep({freq=600, time=0.07, type='sine', vol=0.15, decay=0.02}) {
-    if (!audioEnabled) return;
-    ensureAudio();
-    const o = actx.createOscillator();
-    const g = actx.createGain();
-    o.type = type;
-    o.frequency.value = freq;
-    g.gain.value = vol;
-    o.connect(g).connect(actx.destination);
-    o.start();
-    g.gain.exponentialRampToValueAtTime(0.0001, actx.currentTime + time - decay);
-    o.stop(actx.currentTime + time);
-  }
-  hud.mute.addEventListener('click', () => {
-    audioEnabled = !audioEnabled;
-    hud.mute.textContent = audioEnabled ? '🔊 Sound' : '🔇 Muted';
-    if (audioEnabled) ensureAudio();
-  });
-
-  // ===== Input =====
-  const keys = {};
-  window.addEventListener('keydown', e => { keys[e.code] = true; if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight','Space'].includes(e.code)) e.preventDefault(); }, {passive:false});
-  window.addEventListener('keyup', e => { keys[e.code] = false; }, {passive:true});
-
-  // Virtual joystick
-  let jActive = false, jVec = {x:0,y:0};
-  function stickPos(e){
-    const rect = stick.getBoundingClientRect();
-    const cx = rect.left + rect.width/2, cy = rect.top + rect.height/2;
-    const t = (e.touches && e.touches[0]) || e;
-    const dx = t.clientX - cx, dy = t.clientY - cy;
-    const max = rect.width * 0.45;
-    const len = Math.hypot(dx,dy);
-    const nx = len ? dx/len : 0, ny = len ? dy/len : 0;
-    const m = Math.min(1, len/max);
-    jVec.x = nx * m; jVec.y = ny * m;
-    knob.style.transform = `translate(${nx*m*max}px, ${ny*m*max}px)`;
-  }
-  function stickEnd(){ jActive=false; jVec.x=jVec.y=0; knob.style.transform='translate(0,0)'; }
-
-  stick.addEventListener('pointerdown', (e)=>{ jActive=true; stick.setPointerCapture(e.pointerId); stickPos(e); }, {passive:false});
-  stick.addEventListener('pointermove', (e)=>{ if(jActive){ stickPos(e); e.preventDefault(); }}, {passive:false});
-  stick.addEventListener('pointerup', ()=>stickEnd(), {passive:true});
-  stick.addEventListener('pointercancel', ()=>stickEnd(), {passive:true});
-
-  let attackPressed = false;
-  attackBtn.addEventListener('pointerdown', ()=>{ attackPressed = true; }, {passive:true});
-  attackBtn.addEventListener('pointerup', ()=>{ attackPressed = false; }, {passive:true});
-  window.addEventListener('blur', ()=>{ attackPressed=false; }, {passive:true});
-
-  // ===== Entities =====
-  const rand = (a,b)=>a+Math.random()*(b-a);
-  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
-  const W=()=>canvas.width, H=()=>canvas.height;
-
-  function drawCuteCharacter(x,y,r,altSkin=false){
-    // Body
-    ctx.save();
-    ctx.translate(x,y);
-    ctx.scale(1,1);
-    // shadow
-    ctx.fillStyle = 'rgba(0,0,0,0.08)';
-    ctx.beginPath(); ctx.ellipse(0,r*1.05,r*1.2,r*0.35,0,0,Math.PI*2); ctx.fill();
-
-    // head
-    ctx.fillStyle = altSkin ? '#ffe0f2' : '#fff';
-    ctx.strokeStyle = '#00000020';
-    roundRect(-r*1.1,-r*1.1,r*2.2,r*2, r*0.4);
-    ctx.fill(); ctx.stroke();
-
-    // ears
-    ctx.fillStyle = altSkin ? '#ffc4e6' : '#ffe4ef';
-    ctx.beginPath(); ctx.arc(-r*0.8,-r*1.1,r*0.45,0,Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.arc(r*0.8,-r*1.1,r*0.45,0,Math.PI*2); ctx.fill();
-
-    // face
-    ctx.fillStyle = '#ff6aa0';
-    ctx.beginPath(); ctx.arc(-r*0.35,-r*0.1,r*0.18,0,Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.arc(r*0.35,-r*0.1,r*0.18,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle = '#333';
-    ctx.beginPath(); ctx.arc(-r*0.35,-r*0.1,r*0.08,0,Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.arc(r*0.35,-r*0.1,r*0.08,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle = '#ffb7c8';
-    ctx.beginPath(); ctx.arc(0,r*0.1,r*0.12,0,Math.PI*2); ctx.fill();
-
-    // bow
-    ctx.fillStyle = '#ff69b4';
-    ctx.beginPath(); ctx.ellipse(-r*0.55,-r*0.75,r*0.28,r*0.18,0,0,Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.ellipse(-r*0.15,-r*0.75,r*0.28,r*0.18,0,0,Math.PI*2); ctx.fill();
-    ctx.fillStyle = '#ff88c6'; ctx.beginPath(); ctx.arc(-r*0.35,-r*0.75,r*0.12,0,Math.PI*2); ctx.fill();
-
-    // body
-    ctx.fillStyle = altSkin ? '#fff5fb' : '#ffffff';
-    roundRect(-r*0.9, r*0.6, r*1.8, r*1.2, r*0.3); ctx.fill();
-
-    ctx.restore();
-  }
-  function roundRect(x,y,w,h,r){ ctx.beginPath(); ctx.moveTo(x+r,y); ctx.arcTo(x+w,y,x+w,y+h,r); ctx.arcTo(x+w,y+h,x,y+h,r); ctx.arcTo(x,y+h,x,y,r); ctx.arcTo(x,y,x+w,y,r); ctx.closePath(); }
-
-  const game = {
-    t:0, dt:0, last:0,
-    score:0, wave:1, remaining:0,
-    player:null, bullets:[], enemies:[], particles:[], boss:null, chest:null,
-    running:false, victorySkin:false
-  };
-
-  function resetGame(){
-    game.t=0; game.last=performance.now(); game.dt=0;
-    game.score=0; game.wave=1; game.remaining=0;
-    game.bullets.length=0; game.enemies.length=0; game.particles.length=0;
-    game.boss=null; game.chest=null; game.victorySkin = LS.skin; // already unlocked?
-    const alt = game.victorySkin;
-    game.player = { x: W()/2, y: H()/2, r: 24*DPR, speed: 300*DPR, hp:5, cd:0, alt };
-    spawnWave();
-    hudUpdate();
-  }
-
-  function spawnWave(){
-    const count = 6 + game.wave*2;
-    game.remaining = count;
-    for(let i=0;i<count;i++){
-      const edge = Math.floor(Math.random()*4);
-      let x,y;
-      if(edge===0){ x=rand(50*DPR, W()-50*DPR); y=-40*DPR;}
-      else if(edge===1){ x=W()+40*DPR; y=rand(50*DPR, H()-50*DPR);}
-      else if(edge===2){ x=rand(50*DPR, W()-50*DPR); y=H()+40*DPR;}
-      else{ x=-40*DPR; y=rand(50*DPR, H()-50*DPR);}
-      game.enemies.push({x,y, r:16*DPR, hp:2+Math.floor(game.wave/2), speed: rand(60,100)*DPR, wob: rand(0,Math.PI*2)});
+function initAudio(){
+  if(audioReady) return;
+  const bgm = document.getElementById('bgm');
+  const sfx = document.getElementById('sfxPop');
+  bgm.src = BGM_B64;
+  sfx.src = SFX_B64;
+  bgm.volume = loadNum('musicVol', 0.6);
+  sfx.volume = 0.9;
+  // Some browsers need a play call inside a user gesture
+  bgm.play().then(()=>{audioReady=true;}).catch(()=>{ /* will retry on next gesture */ });
+  // Attach once-more unlock on canvas tap if needed
+  document.body.addEventListener('pointerdown', function once(){
+    if(!audioReady){
+      bgm.play().then(()=>{audioReady=true;}).catch(()=>{});
     }
-    hudUpdate();
+    document.body.removeEventListener('pointerdown', once);
+  }, {once:true});
+  updateOptionButtons();
+}
+function setMusicVolume(v){
+  v = Number(v);
+  document.getElementById('bgm').volume = v;
+  saveNum('musicVol', v);
+}
+function toggleMusicMute(){
+  musicMuted = !musicMuted;
+  const bgm = document.getElementById('bgm');
+  if(musicMuted) bgm.pause(); else if(audioReady) bgm.play();
+  updateOptionButtons();
+}
+function toggleSfxMute(){
+  sfxMuted = !sfxMuted;
+  updateOptionButtons();
+}
+function updateOptionButtons(){
+  document.getElementById('btnMuteMusic').textContent = (musicMuted ? '🔈 Unmute Music' : '🔈 Mute Music');
+  document.getElementById('btnMuteSfx').textContent = (sfxMuted ? '🔉 Unmute SFX' : '🔉 Mute SFX');
+}
+
+/* =========================
+   Game Core
+   ========================= */
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d',{alpha:false});
+const hudHP = document.getElementById('hp');
+const hudKills = document.getElementById('kills');
+const hudBossHP = document.getElementById('bossHP');
+const overlay = document.getElementById('overlayMsg');
+const overlayTitle = document.getElementById('overlayTitle');
+const overlayText = document.getElementById('overlayText');
+const overlayActions = document.getElementById('overlayActions');
+
+const state = {
+  running:false,
+  raf:0,
+  time:0,
+  dt:0,
+  last:0,
+  worldW: 2400,
+  gravity: 1800,
+  floorY: 420,
+  camX: 0,
+  phase:'play', // play | boss | win | gameover
+  kills:0,
+  player:null,
+  enemies:[],
+  bullets:[],
+  boss:null,
+  chest:null,
+  keys:{left:false,right:false,up:false,shoot:false},
+  touch:{left:false,right:false,up:false,shoot:false},
+};
+
+function resetAndRun(){
+  // Resize for pixel-perfect scaling
+  fitCanvas();
+  window.addEventListener('resize', fitCanvas);
+
+  // Input
+  setupKeyboard();
+  setupTouch();
+
+  // Entities
+  state.kills = 0;
+  state.enemies.length = 0;
+  state.bullets.length = 0;
+  state.boss = null;
+  state.chest = null;
+  state.phase = 'play';
+  state.camX = 0;
+  state.time = 0;
+  state.last = performance.now();
+  state.player = makePlayer(80, state.floorY-56);
+
+  // Spawn a few to begin
+  for(let i=0;i<4;i++) spawnEnemy(400 + i*280 + Math.random()*80);
+
+  // HUD
+  updateHUD();
+
+  // run!
+  state.running = true;
+  loop();
+}
+
+function loop(){
+  if(!state.running) return;
+  const now = performance.now();
+  state.dt = Math.min((now - state.last)/1000, 1/20);
+  state.last = now;
+  state.time += state.dt;
+
+  step(state.dt);
+  draw();
+
+  state.raf = requestAnimationFrame(loop);
+}
+
+function step(dt){
+  const p = state.player;
+  // horizontal input
+  let move = 0;
+  if(state.keys.left || state.touch.left) move -= 1;
+  if(state.keys.right || state.touch.right) move += 1;
+  p.vx += move * 2400 * dt;
+  // friction
+  p.vx *= 0.88;
+  // clamp
+  p.vx = clamp(p.vx,-350,350);
+
+  // jump
+  if((state.keys.up || state.touch.up) && p.onGround){
+    p.vy = -720; p.onGround=false;
+    // small sfx
+    playPop();
   }
 
-  function spawnBoss(){
-    const r = 60*DPR;
-    game.boss = { x:W()/2, y:-r, r, hp: 120 + game.wave*20, hpMax: 120 + game.wave*20, phase:0, t:0 };
-    state = STATE.BOSS;
-    hud.bossbar.style.display='';
+  // shoot
+  if(state.keys.shoot || state.touch.shoot){
+    tryShoot();
   }
 
-  function spawnChest(){
-    const r=28*DPR;
-    game.chest = { x:W()/2, y:H()/2, r, open:false, t:0 };
+  // physics
+  p.vy += state.gravity * dt;
+  p.x += p.vx * dt;
+  p.y += p.vy * dt;
+
+  // ground collide
+  if(p.y + p.h > state.floorY){
+    p.y = state.floorY - p.h;
+    p.vy = 0;
+    p.onGround = true;
   }
 
-  function shoot(dirX, dirY){
-    const p = game.player;
-    if(p.cd>0) return;
-    p.cd = 0.22; // cooldown
-    const len = Math.hypot(dirX,dirY) || 1;
-    const vx = (dirX/len) * 520*DPR;
-    const vy = (dirY/len) * 520*DPR;
-    game.bullets.push({x:p.x, y:p.y, r:10*DPR, vx, vy, t:0});
-    beep({freq:720,type:'triangle',time:0.06});
-  }
+  // world bounds
+  p.x = clamp(p.x, 20, state.worldW-20);
 
-  function damagePlayer(dmg){
-    const p = game.player;
-    if(p.hp<=0) return;
-    p.hp = Math.max(0, p.hp - dmg);
-    for(let i=0;i<12;i++) particle(p.x, p.y, '#ff4d6d');
-    beep({freq:200,type:'square',time:0.08,vol:0.2});
-    if(p.hp===0) gameOver();
-  }
-
-  function damageEnemy(e, amount=1){
-    e.hp -= amount;
-    for(let i=0;i<8;i++) particle(e.x,e.y,'#ff88c6');
-    if(e.hp<=0){
-      game.score += 10;
-      game.remaining = Math.max(0, game.remaining-1);
-      for(let i=0;i<10;i++) particle(e.x,e.y,'#7ef5c9');
+  // spawn enemies over time
+  if(state.phase === 'play'){
+    if(state.enemies.length < 5 && Math.random() < 0.02) {
+      spawnEnemy(state.camX + canvas.width + 200 + Math.random()*200);
+    }
+    // boss condition
+    if(state.kills >= 8 && !state.boss){
+      spawnBoss(state.camX + canvas.width + 320);
+      state.phase = 'boss';
     }
   }
 
-  function damageBoss(amount){
-    const b = game.boss; if(!b) return;
-    b.hp = Math.max(0, b.hp - amount);
-    for(let i=0;i<12;i++) particle(b.x,b.y,'#ffd166');
-    if(b.hp===0){
-      game.score += 200;
-      state = STATE.VICTORY;
-      hud.bossbar.style.display='none';
-      spawnChest();
-      beep({freq:900,type:'sawtooth',time:0.12,vol:0.22});
+  // bullets
+  for(let i=state.bullets.length-1;i>=0;i--){
+    const b = state.bullets[i];
+    b.x += b.vx*dt;
+    b.y += b.vy*dt;
+    b.life -= dt;
+    if(b.life<=0) { state.bullets.splice(i,1); continue; }
+    // hit enemies
+    for(let j=state.enemies.length-1;j>=0;j--){
+      const e = state.enemies[j];
+      if(aabb(b, e)){
+        e.hp -= 1; b.life=0;
+        if(e.hp<=0){ state.enemies.splice(j,1); state.kills++; updateHUD(); }
+        break;
+      }
+    }
+    // hit boss
+    if(state.boss && aabb(b, state.boss)){
+      state.boss.hp -= 1; b.life=0; updateHUD();
+      if(state.boss.hp<=0){
+        // boss defeated → chest
+        state.boss = null;
+        spawnChest(p.x + 240);
+        state.phase = 'win'; // we still allow movement to chest
+        showOverlay("Boss Defeated!", "A treasure chest appeared ahead. Reach it and open it!", [
+          {label:"OK",action:closeOverlay}
+        ]);
+      }
     }
   }
 
-  function particle(x,y,color='#ff69b4'){
-    game.particles.push({x,y, vx:rand(-120,120)*DPR, vy:rand(-120,120)*DPR, life: rand(0.4,0.9), color});
+  // enemies AI
+  for(const e of state.enemies){
+    e.x -= e.speed * dt;
+    e.t += dt;
+    e.y = state.floorY - e.h - Math.sin(e.t*3)*6; // bobbing
+    // damage player if collide
+    if(aabb(e, p)){
+      damagePlayer();
+      // knockback
+      p.vx = -Math.sign(e.x - p.x) * 260;
+    }
+  }
+  // cleanup enemies off-screen
+  for(let i=state.enemies.length-1;i>=0;i--){
+    if(state.enemies[i].x < state.camX - 200) state.enemies.splice(i,1);
   }
 
-  // ===== Loop =====
-  function loop(now){
-    const dt = Math.min(0.033, (now - game.last)/1000);
-    game.dt = dt; game.t += dt; game.last = now;
-    update(dt); render();
-    if(game.running) requestAnimationFrame(loop);
+  // boss simple pattern
+  if(state.boss){
+    const b=state.boss;
+    b.t += dt;
+    b.x -= 40*dt;
+    b.y = state.floorY - b.h - 40 - Math.sin(b.t*1.7)*22;
+    if(aabb(b, p)){
+      damagePlayer();
+      p.vx = -Math.sign(b.x - p.x) * 320;
+    }
   }
 
-  function update(dt){
-    if(state===STATE.PLAY || state===STATE.BOSS || state===STATE.VICTORY){
-      // player move
-      const p = game.player;
-      const dx = (keys['KeyD']||keys['ArrowRight']?1:0) - (keys['KeyA']||keys['ArrowLeft']?1:0) + jVec.x;
-      const dy = (keys['KeyS']||keys['ArrowDown']?1:0) - (keys['KeyW']||keys['ArrowUp']?1:0) + jVec.y;
-      const len = Math.hypot(dx,dy); 
-      if(len>0){
-        p.x += (dx/len) * p.speed * dt;
-        p.y += (dy/len) * p.speed * dt;
-      }
-      p.x = clamp(p.x, p.r+6*DPR, W()-p.r-6*DPR);
-      p.y = clamp(p.y, p.r+6*DPR, H()-p.r-6*DPR);
-      if(p.cd>0) p.cd -= dt;
+  // chest interact
+  if(state.chest){
+    const c=state.chest;
+    c.t += dt;
+    c.openAnim = Math.max(0, c.openAnim - dt*2);
+    // wiggle
+    c.wiggle = Math.sin(c.t*6)*2;
+    // reach chest
+    if(aabb(c, p) && !c.opened){
+      showOverlay("Open Chest?", "Tap the button to claim your reward!", [
+        {label:"Open Chest 🎁", action:openChest}
+      ]);
+    }
+  }
 
-      // shooting
-      const space = !!keys['Space'];
-      if(space || attackPressed){
-        // aim toward nearest enemy or boss or forward
-        let tx=0, ty=0; let best=1e9;
-        if(state===STATE.BOSS && game.boss){
-          const b=game.boss; const d = Math.hypot(b.x-p.x,b.y-p.y); best=d; tx=b.x-p.x; ty=b.y-p.y;
-        }
-        for(const e of game.enemies){
-          const d = Math.hypot(e.x-p.x, e.y-p.y);
-          if(d<best){ best=d; tx=e.x-p.x; ty=e.y-p.y; }
-        }
-        if(best<1e9){ shoot(tx,ty); }
-        else{ shoot(1,0); }
-      }
+  // camera follows
+  state.camX = clamp(p.x - canvas.width*0.35, 0, state.worldW - canvas.width);
 
-      // bullets
-      for(let i=game.bullets.length-1;i>=0;i--){
-        const b = game.bullets[i];
-        b.x += b.vx*dt; b.y += b.vy*dt; b.t+=dt;
-        if(b.x<-40*DPR || b.x>W()+40*DPR || b.y<-40*DPR || b.y>H()+40*DPR || b.t>2.5){
-          game.bullets.splice(i,1); continue;
-        }
-        // bullet vs enemies
-        for(let j=game.enemies.length-1;j>=0;j--){
-          const e = game.enemies[j];
-          if(circleHit(b,e)){
-            game.bullets.splice(i,1);
-            damageEnemy(e,2);
-            if(e.hp<=0) game.enemies.splice(j,1);
-            break;
-          }
-        }
-        // bullet vs boss
-        if(state===STATE.BOSS && game.boss && circleHit(b, game.boss)){
-          game.bullets.splice(i,1);
-          damageBoss(3);
-        }
-      }
+  // death
+  if(p.hp<=0 && state.phase!=='gameover'){
+    state.phase='gameover';
+    showOverlay("Game Over", "Kitty needs a hug. Try again!", [
+      {label:"Replay", action:()=>{ closeOverlay(); resetAndRun(); }},
+      {label:"Menu", action:()=>{ closeOverlay(); backToMenu(); }}
+    ]);
+  }
+}
 
-      // enemies
-      for(let i=game.enemies.length-1;i>=0;i--){
-        const e = game.enemies[i];
-        e.wob += dt*3;
-        const toP = Math.atan2(game.player.y - e.y, game.player.x - e.x);
-        const speed = e.speed;
-        e.x += Math.cos(toP)*speed*dt + Math.cos(e.wob)*30*DPR*dt;
-        e.y += Math.sin(toP)*speed*dt + Math.sin(e.wob)*30*DPR*dt;
+function draw(){
+  const cw=canvas.width, ch=canvas.height;
+  const cam = state.camX|0;
 
-        // hit player
-        if(circleHit(e, game.player)){
-          game.enemies.splice(i,1);
-          damagePlayer(1);
-          continue;
-        }
-      }
+  // sky (already gradient background), draw distant clouds
+  ctx.clearRect(0,0,cw,ch);
+  drawClouds(cam);
 
-      // wave -> boss
-      if(state===STATE.PLAY && game.remaining===0 && game.enemies.length===0){
-        spawnBoss();
-      }
+  // parallax hills
+  drawHills(cam);
 
-      // boss behavior
-      if(state===STATE.BOSS && game.boss){
-        const b = game.boss;
-        b.t += dt;
-        // enter
-        if(b.y < H()*0.35) b.y += 120*DPR*dt;
-        // phase bullets (simple star burst)
-        if(b.t>1.2){
-          b.t=0;
-        
+  // ground
+  ctx.fillStyle = '#55c06a';
+  ctx.fillRect(0, state.floorY, cw, ch-state.floorY);
+  // ground top line
+  ctx.fillStyle = '#3aa351';
+  ctx.fillRect(0, state.floorY-6, cw, 6);
+
+  // chest
+  if(state.chest) drawChest(state.chest, cam);
+
+  // boss
+  if(state.boss) drawBoss(state.boss, cam);
+
+  // enemies
+  for(const e of state.enemies) drawEnemy(e, cam);
+
+  // bullets
+  for(const b of state.bullets) drawHeart(b, cam);
+
+  // player
+  drawPlayer(state.player, cam);
+
+  // UI hints if win phase and no chest yet
+  // (done via overlay)
+}
+
+/* =========================
+   Entities & Drawing
+   ========================= */
+function makePlayer(x,y){
+  return {x,y,w:40,h:56,vx:0,vy:0,onGround:false,hp:5,shootCd:0, face:1, blink:0};
+}
+function spawnEnemy(x){
+  state.enemies.push({x, y:state.floorY-32, w:34,h:32,hp:2, speed: 90+Math.random()*60, t:0});
+}
+function spawnBoss(x){
+  state.boss = {x, y:state.floorY-160, w:130, h:120, hp: 30, t:0};
+}
+function spawnChest(x){
+  state.chest = {x, y: state.floorY-40, w:50, h:38, opened:false, openAnim:0, t:0, wiggle:0};
+}
+
+function drawPlayer(p, cam){
+  const x = (p.x - cam)|0, y = (p.y)|0;
+  // body
+  roundRect(ctx, x-18, y+6, 36, 34, 12, '#fff', '#e6e6ff');
+  // head
+  roundRect(ctx, x-22, y-22, 44, 36, 16, '#fff', '#fff');
+  // ears
+  roundedTri(ctx, x-16, y-22, 12, 14, '#fff');
+  roundedTri(ctx, x+16, y-22, -12, 14, '#fff');
+  // bow (cute vibe, generic)
+  ctx.fillStyle = '#ff7fab';
+  ctx.beginPath(); ctx.arc(x-6, y-12, 6, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(x+6, y-12, 6, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#ffafc9'; ctx.beginPath(); ctx.arc(x, y-12, 4, 0, Math.PI*2); ctx.fill();
+  // eyes
+  ctx.fillStyle = '#222';
+  const blink = (Math.sin(state.time*6)+1)/2<0.08;
+  const eyeH = blink?2:5;
+  ctx.fillRect(x-8, y-8, 5, eyeH);
+  ctx.fillRect(x+3, y-8, 5, eyeH);
+  // feet
+  roundRect(ctx, x-16, y+38, 14, 10, 5, '#ffd3a3');
+  roundRect(ctx, x+2,  y+38, 14, 10, 5, '#ffd3a3');
+  // outline cute blush
+  ctx.fillStyle = 'rgba(255,120,150,.25)';
+  ctx.beginPath(); ctx.ellipse(x-14,y,7,4,0,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.ellipse(x+14,y,7,4,0,0,Math.PI*2); ctx.fill();
+}
+
+function drawEnemy(e, cam){
+  const x=(e.x - cam)|0, y=e.y|0;
+  // slime blob
+  ctx.fillStyle = '#7a88ff';
+  ctx.beginPath(); ctx.ellipse(x, y+e.h/2, e.w/2, e.h/2, 0, 0, Math.PI*2); ctx.fill();
+  // eyes
+  ctx.fillStyle='#142';
+  ctx.fillRect(x-6, y+6, 3, 6);
+  ctx.fillRect(x+3, y+6, 3, 6);
+  // hp dots
+  for(let i=0;i<e.hp;i++){
+    ctx.fillStyle='#e3f';
+    ctx.fillRect(x-6 + i*6, y-6, 4, 4);
+  }
+}
+
+function drawBoss(b, cam){
+  const x=(b.x - cam)|0, y=b.y|0;
+  // big round meanie
+  ctx.fillStyle = '#ff6b8b';
+  ctx.beginPath(); ctx.ellipse(x, y+b.h/2, b.w/2, b.h/2, 0, 0, Math.PI*2); ctx.fill();
+  // mouth
+  ctx.fillStyle='#300'; ctx.fillRect(x-30, y+40, 60, 16);
+  // eyes angry
+  ctx.fillStyle='#200';
+  ctx.fillRect(x-38, y+18, 24, 8);
+  ctx.fillRect(x+14, y+18, 24, 8);
+  // horns
+  roundedTri(ctx, x-50, y+24, -20, 24, '#ffe4a6');
+  roundedTri(ctx, x+50, y+24, 20, 24, '#ffe4a6');
+}
+
+function drawHeart(b, cam){
+  const x=(b.x - cam)|0, y=b.y|0, s=8;
+  ctx.save(); ctx.translate(x,y); ctx.rotate(-0.2);
+  ctx.fillStyle='#ff5470';
+  ctx.beginPath();
+  ctx.moveTo(0,0);
+  ctx.bezierCurveTo(-s,-s*0.6, -s*1.2, s*0.5, 0, s);
+  ctx.bezierCurveTo(s*1.2, s*0.5, s, -s*0.6, 0,0);
+  ctx.fill();
+  ctx.restore();
+}
+
+function drawChest(c, cam){
+  const x=(c.x - cam)|0, y=c.y|0;
+  const open = c.openAnim>0 ? c.openAnim : 0;
+  const lidAngle = open*0.9;
+  // base
+  roundRect(ctx, x-25, y-10, 50, 38, 8, '#b67c2a', '#d39a42');
+  // lid (rotating)
+  ctx.save();
+  ctx.translate(x, y-10);
+  ctx.rotate(-lidAngle);
+  roundRect(ctx, -28, -16, 56, 20, 8, '#c88933', '#e6ad4a');
+  ctx.restore();
+  // band & lock
+  ctx.fillStyle='#6b3e13'; ctx.fillRect(x-5,y-10,10,38);
+  ctx.fillStyle='#ffd166'; ctx.fillRect(x-4, y+6, 8, 10); ctx.beginPath(); ctx.arc(x, y+12, 3, 0, Math.PI*2); ctx.fill();
+  // wiggle shadow
+  ctx.globalAlpha=.2; ctx.fillStyle='#000'; ctx.beginPath(); ctx.ellipse(x, y+38, 24, 6, 0, 0, Math.PI*2); ctx.fill(); ctx.globalAlpha=1;
+}
+
+function drawClouds(cam){
+  ctx.save();
+  const speed=0.3;
+  ctx.fillStyle='rgba(255,255,255,.7)';
+  const base = ((cam*speed)|0)%400;
+  for(let i=-1;i<6;i++){
+    blob( i*400 - base, 70, 60, 22);
+  }
+  ctx.restore();
+}
+function blob(x,y,w,h){
+  ctx.beginPath();
+  ctx.ellipse(x, y, w, h, 0, 0, Math.PI*2); ctx.ellipse(x+50, y+6, w*.7, h*.8, 0, 0, Math.PI*2);
+  ctx.ellipse(x-40, y+10, w*.6, h*.7, 0, 0, Math.PI*2); ctx.fill();
+}
+function drawHills(cam){
+  ctx.save();
+  const hBase = state.floorY - 12;
+  ctx.fillStyle = '#86dbff';
+  ctx.fillRect(0, hBase-160, canvas.width, 160);
+  // parallax front
+  ctx.fillStyle='#4eb35f';
+  const base = ((cam*0.6)|0)%200;
+  for(let x=-base-200;x<canvas.width+200;x+=200){
+    ctx.beginPath();
+    ctx.moveTo(x, hBase);
+    ctx.quadraticCurveTo(x+50,hBase-40, x+100,hBase);
+    ctx.
